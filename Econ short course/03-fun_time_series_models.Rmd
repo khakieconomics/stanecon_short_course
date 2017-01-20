@@ -1,0 +1,561 @@
+# Some fun time series models {#funtimeseries}
+
+
+## This session
+
+In this session, we'll cover two of the things that Stan lets you do quite simply: implement state
+space models, and finite mixtures. 
+
+
+### Finite mixtures
+
+
+
+In a post [here](https://modernstatisticalworkflow.blogspot.com/2016/10/finite-mixture-models-in-stan.html), 
+I describe a simple model in which each observation of our data could have one of two densities. We estimated the 
+parameters of both densities, and the probability of the data coming from either. While finite mixture models as in the
+last post are a useful learning aid, we might want richer models for applied work. In particular, we might want the
+probability of our data having each density to vary across observations. This is the first of two posts dedicated
+to this topic. I gave a [talk](https://dl.dropboxusercontent.com/u/63100926/become_a_bayesian_shareable.html) covering 
+some of this also (best viewed in Safari).
+
+For sake of an example, consider this: the daily returns series of a stock has two states. In the first, the stock is 'priced to 
+perfection', and so the price is an I(1) random walk (daily returns are mean stationary). In the second, there is momentum---here, 
+daily returns have AR(1) structure. Explicitly, for daily log returns $r_{t}$: 
+
+State 1: $r_{t} \sim \mbox{normal}(\alpha_{1}, \sigma_{1})$
+
+State 2: $r_{t} \sim \mbox{normal}(\alpha_{2} + \rho_{1} r_{t-1}, \sigma_{2})$
+
+When we observe a value of $r_{t}$, we don't know for sure whether it came from the first or second model--that is precisely 
+what we want to infer. For this, we need a model for the probability that an observation came from each state $s_{t}\in 1, 2$. One such model
+could be: 
+
+$$
+\mbox{prob}(s_{t}=1 | \mathcal{I}_{t}) = \mbox{Logit}^{-1}(\mu_{t})
+$$
+
+with
+
+$$
+\mu_{t} \sim \mbox{normal}(\alpha_{3} + \rho_{2}\mu_{t-1} + f(\mathcal{I}_{t}), \sigma_{3})
+$$
+
+Here, $f(\mathcal{I}_{t})$ is a function of the information available at the beginning of day $t$. If we had interesting
+information about sentiment, or news etc., it could go in here. For simplicity, let's say  $f(\mathcal{I}_{t}) = \beta r_{t-1}$. 
+
+Under this specification (and for a vector containing all parameters, $\theta$), we can specify the likelihood contribution of 
+an observation. It is simply the weighted average of likelihoods under each candidate data generating process, where the weights
+are the probabilities that the data comes from each density. 
+
+\[
+p(r_{t} | \theta) = \mbox{Logit}^{-1}(\mu_{t})\, \mbox{normal}(r_{t}|\, \alpha_{1}, \sigma_{1}) + (1-\mbox{Logit}^{-1}(\mu_{t}))\, \mbox{normal}(r_{t}|\, \alpha_{2} + \rho r_{t-1}, \sigma_{2})
+\]
+
+As discussed in the last post, we work in log likelihoods, not likelihoods. This means we should use the `log_sum_exp()` function in 
+Stan. This means that we express the log likelihood contribution of a single point as:
+
+```{r, eval = F}
+log_sum_exp(log(inv_logit(mu[t])) + normal_lpdf(r[t] | alpha[1], sigma[1]),
+            log((1 - inv_logit(mu[t]))) + normal_lpdf(r[t] | alpha[2] + rho[1], sigma[2]))
+```
+
+Stan has recently added another function which performs the same calculation, but makes writing it out a bit easier. 
+For two log densities `lp1`, `lp2` and a mixing probability `theta`, we have
+
+```{r, eval = F}
+log_mix(theta, lp1, lp2) = log_sum_exp(log(theta) + lp1,
+                                       log(1-theta) + lp2)
+```
+
+### Writing out the model
+
+The Stan code for the model is: 
+
+```{r, eval = F}
+// saved as time_varying_finite_mixtures.stan
+data {
+  int T;
+  vector[T] r;
+}
+parameters {
+  vector[T] mu;
+  vector[2] rho;
+  real beta;
+  vector<lower = 0>[3] sigma;
+  vector[3] alpha; 
+}
+model {
+  // priors 
+  mu[1] ~ normal(0, .1);
+  sigma ~ cauchy(0, 0.5);
+  rho ~ normal(1, .1);
+  beta~ normal(.5, .25);
+  alpha[1:2] ~ normal(0, 0.1);
+  alpha[3] ~ normal(0, 1);
+
+  // likelihood
+  for(t in 2:T) {
+    mu[t] ~ normal(alpha[3] + rho[1]*mu[t-1] + beta* r[t-1], sigma[3]);
+
+    target += log_mix(inv_logit(mu[t]), 
+                      normal_lpdf(r[t] | alpha[1], sigma[1]), 
+                      normal_lpdf(r[t] | alpha[2] + rho[2] * r[t-1], sigma[2]));
+  }
+}
+```
+
+### Recapturing 'known unknowns'
+
+As should be clear by now, I believe strongly that we should simulate from the model and make sure that 
+we can recapture "known unknowns" before taking the model to real data. Below we simulate some fake data. 
+```{r, echo = F, message = F, warning = F}
+library(rstan); library(ggplot2); library(dplyr); library(reshape2)
+options(mc.cores = parallel::detectCores())
+```
+
+```{r, warning = F, message = F, cache = T}
+# Set some fake parameters
+alpha1 <- -0.01
+alpha2 <- 0.015
+rho1 <- 0.95
+rho2 <- 0.8
+beta <- 0.5
+
+sigma1 <- 0.05
+sigma2 <- 0.03
+sigma3 <- 0.3
+T <- 500
+r <- rep(NA, T)
+r[1] <- 0
+
+mu <- rep(NA, T)
+z <- rep(NA, T)
+mu[1] <- 0
+z[1] <- 1
+
+
+# Simulate the data series
+for(t in 2:T) {
+  mu[t]  <- rho1 * mu[t-1] + beta*(r[t-1]) + rnorm(1, 0, sigma3)
+  prob <- arm::invlogit(mu[t])
+  z[t] <- sample(1:2, 1, prob = c(prob, 1-prob))
+  
+  if(z[t]==1) {
+    # random walk state
+    r[t] <- rnorm(1, alpha1, sigma1)
+  } else {
+    # momentum state
+    r[t] <- rnorm(1, alpha2 + rho2*r[t-1], sigma2)
+  }
+}
+
+```
+
+You should plot your data before doing anything. Let's take a look. 
+
+```{r}
+# Plot the returns
+plot.ts(r)
+# Plot the probability of the random walk state
+plot.ts(arm::invlogit(mu))
+```
+
+Looks good! Now we compile and run the model. 
+
+```{r, message = F, warning = F, results ="hide", cache = T}
+compiled_model <- stan_model("time_varying_finite_mixtures.stan")
+
+estimated_model <- sampling(compiled_model, data = list(r = r, T = T), cores = 4, chains = 4)
+```
+
+Now we inspect the parameter estimates, which should align with those in our data generating process. 
+
+```{r}
+print(estimated_model, pars = c("alpha", "rho", "sigma"))
+```
+
+It seems that most of the parameters appear to have estimated quite cleanly--most of the Rhats are fairly close, 
+to 1, with the exception of the standard deviation of the updates in the latent series (which will be very 
+weakly identified, given we don't observe `mu`). We would fix this by adding better prior information to the model. 
+
+### Taking the model to real data
+
+Now we know that our program can recapture a known model, we can take it to some real data. In this case, we'll use
+the log differences in sequential adjusted closing prices for Apple's common stock. With Apple being such a large, 
+well-researched (and highly liquid) stock, we should expect that it spends almost all time in the random walk state. 
+Let's see what the data say! 
+
+```{r, message = F, warning = F, cache = T}
+# Now with real data! 
+aapl <- Quandl::Quandl("YAHOO/AAPL")
+
+aapl <- aapl %>%
+  mutate(Date = as.Date(Date)) %>%
+  arrange(Date) %>% 
+  mutate(l_ac = log(`Adjusted Close`),
+         dl_ac = c(NA, diff(l_ac))) %>% 
+  filter(Date > "2015-01-01")
+
+aapl_mod <- sampling(compiled_model, data= list(T = nrow(aapl), r = aapl$dl_ac*100))
+
+```
+
+Now check that the model has fit properly
+
+```{r, eval = F}
+shinystan::launch_shinystan(aapl_mod)
+```
+
+And finally plot the probability of being in each state.
+
+```{r, cache = T, warning = F, message = F}
+plot1 <- aapl_mod %>% 
+  as.data.frame() %>% 
+  select(contains("mu")) %>%
+  melt() %>% 
+  group_by(variable) %>% 
+  summarise(lower = quantile(value, 0.95), 
+            median = median(value),
+            upper = quantile(value, 0.05)) %>% 
+  mutate(date = aapl$Date,
+         ac = aapl$l_ac) %>%
+  ggplot(aes(x = date)) + 
+  geom_ribbon(aes(ymin = arm::invlogit(lower), ymax = arm::invlogit(upper)), fill= "orange", alpha = 0.4) +
+  geom_line(aes(y = arm::invlogit(median))) +
+  ggthemes::theme_economist() +
+  xlab("Date") +
+  ylab("Probability of random walk model")
+
+
+plot2 <- aapl_mod %>% 
+  as.data.frame() %>% 
+  select(contains("mu")) %>%
+  melt() %>% 
+  group_by(variable) %>% 
+  summarise(lower = quantile(value, 0.95), 
+            median = median(value),
+            upper = quantile(value, 0.05)) %>% 
+  mutate(date = aapl$Date,
+         ac = aapl$`Adjusted Close`) %>%
+  ggplot(aes(x = date, y = ac)) +
+  geom_line() +
+  ggthemes::theme_economist() +
+  xlab("Date") +
+  ylab("Adjusted Close")
+
+gridExtra::grid.arrange(plot1, plot2)
+
+```
+
+
+And there we go! As expected, Apple spends almost all their time in the random walk state, 
+but, surprisingly, appears to have had a few periods with some genuine (mainly negative)
+momentum. 
+
+### Building up the model
+
+The main problem with this model is that our latent state $\mu$ can only really vary so much 
+from period to period. That can delay the response to the appearance of a new state, and slow
+the process of "flipping back" into the regular state. One way of getting around this is to have
+a discrete state with more flexibility in flipping between states. We'll explore this in the next 
+post, on Regime-Switching models. 
+
+
+## A state space model involving polls
+
+
+This tutorial covers how to build a low-to-high frequency interpolation
+model in which we have possibly many sources of information that occur
+at various frequencies. The example I'll use is drawing inference about
+the preference shares of Clinton and Trump in the current presidential 
+campaign. This is a good example for this sort of imputation: 
+
+- Data (polls) are sporadically released. Sometimes we have many released
+simultaneously; at other times there may be many days with no releases. 
+- The various polls don't necessarily agree. They might have different methodologies
+or sampling issues, resulting in quite different outcomes. We want to build
+a model that can incorporate this. 
+
+There are two ingredients to the polling model. A multi-measurement model,
+typified by Rubin's 8 schools example. And a state-space model. Let's briefly 
+describe these. 
+
+### Multi-measurement model and the 8 schools example
+
+Let's say we run a randomized control trial in 8 schools. Each school $i$ reports
+its own treatment effect $te_{i}$, which has a standard error $\sigma_{i}$. There
+are two questions the 8-schools model tries to answer: 
+
+- If you administer the experiment at one of these schools, say, school 1, and have your estimate 
+of the treatment effect $te_{1}$, what do you expect would be the treatment effect if 
+you were to run the experiment again? In particular, would your expectations of the 
+treatment effect in the next experiment change once you learn the treatment effects estimated
+from the experiments in the other schools? 
+- If you roll out the experiment at a new school (school $9$), what do we expect the 
+treatment effect to be? 
+
+The statistical model that Rubin proposed is that each school has its own _true_ 
+latent treatment effect $y_{i}$, around which our treatment effects are distributed.
+
+$$
+te_{i} \sim \mathcal{N}(y_{i}, \sigma_{i})
+$$
+
+These "true" but unobserved treatment effects are in turn distributed according to 
+a common hyper-distribution with mean $\mu$ and standard deviation $\tau$
+
+$$
+y_{i} \sim \mathcal{N}(\mu, \tau)
+$$
+
+Once we have priors for $\mu$ and $\tau$, we can estimate the above model with Bayesian 
+methods. 
+
+
+### A state-space model
+
+State-space models are a useful way of dealing with noisy or incomplete data,
+like our polling data. The idea is that we can divide our model into two parts:
+
+- **The state**. We don't observe the state; it is a latent variable. But we know
+how it changes through time (or at least how large its potential changes are).
+- **The measurement**. Our state is measured with imprecision. The measurement
+model is the distribution of the data that we observe around the state. 
+
+A simple example might be consumer confidence, an unobservable latent construct
+about which our survey responses should be distributed. So our state-space model would be:
+
+The state
+
+$$
+conf_{t} \sim \mathcal{N}(conf_{t-1}, \sigma)
+$$
+
+which simply says that consumer confidence is a random walk with normal innovations
+with a standard deviation $\sigma$, and 
+
+$$
+\mbox{survey_measure}_{t} \sim \mathcal{N}(conf_{t}, \tau)
+$$
+
+which says that our survey measures are normally distributed around the true latent 
+state, with standard deviation $\tau$. 
+
+Again, once we provide priors for the initial value of the state $conf_{0}$ and $\tau$, 
+we can estimate this model quite easily. 
+
+The important thing to note is that we have a model for the state even if there
+is no observed measurement. That is, we know (the distribution for) how consumer confidence should progress
+even for the periods in which there are no consumer confidence surveys. This makes
+state-space models ideal for data with irregular frequencies or missing data. 
+
+### Putting it together
+
+As you can see, these two models are very similar: they involve making inference
+about a latent quantity from noisy measurements. The first shows us how we can aggregate 
+many noisy measurements together _within a single time period_, while the second
+shows us how to combine irregular noisy measures _over time_. We can now combine
+these two models to aggregate multiple polls over time. 
+
+The data generating process I had in mind is a very simple model where each candidate's
+preference share is an unobserved state, which polls try to measure. Unlike some
+volatile poll aggregators, I assume that the unobserved state can move according
+to a random walk with normal disturbances of standard deviation .25%. This greatly
+smoothes out the sorts of fluctuations we see around the conventions etc. We could 
+estimate this parameter using fairly tight priors, but I just hard-code it in for simplicity. 
+
+That is, we have the state for candidate $c$ in time $t$ evolving according to
+
+$$
+\mbox{Vote share}_{c, t} \sim \mathcal{N} (\mbox{Vote share}_{c, t-1}. 0.25)
+$$
+
+with measurements being made of this in the polls. Each poll $p$ at time $t$ is
+distributed according to 
+
+$$
+\mbox{poll}_{c, p, t} \sim \mathcal{N} (\mbox{Vote share}_{c, t}. \tau)
+$$
+
+I give an initial state prior of 50% to Clinton and a 30% prior to Trump May of last year. As we get further
+from that initial period, the impact of the prior is dissipated. 
+
+The code to download the data, run the model is below. You will need to have the most recent version of ggplot2 installed.
+
+```
+// saved as models/state_space_polls.stan
+
+data {
+  int polls; // number of polls
+  int T; // number of days
+  matrix[T, polls] Y; // polls
+  matrix[T, polls] sigma; // polls standard deviations
+  real initial_prior;
+}
+parameters {
+  vector[T] mu; // the mean of the polls
+  real<lower = 0> tau; // the standard deviation of the random effects
+  matrix[T, polls] shrunken_polls;
+}
+model {
+  // prior on initial difference
+  mu[1] ~ normal(initial_prior, 1);
+  tau ~ student_t(4, 0, 5);
+  // state model
+  for(t in 2:T) {
+    mu[t] ~ normal(mu[t-1], 0.25);
+  }
+  
+  // measurement model
+  for(t in 1:T) {
+    for(p in 1:polls) {
+      if(Y[t, p] != -9) {
+        Y[t,p]~ normal(shrunken_polls[t, p], sigma[t,p]);
+        shrunken_polls[t, p] ~ normal(mu[t], tau);
+      } else {
+        shrunken_polls[t, p] ~ normal(0, 1);
+      }
+    }
+  }
+}
+
+```
+
+```{r, results = "hide", message = F, warning = F}
+library(rvest); library(dplyr); library(ggplot2); library(rstan); library(reshape2); library(stringr); library(lubridate)
+options(mc.cores = parallel::detectCores())
+source("models/theme.R")
+
+# The polling data
+realclearpolitics_all <- read_html("http://www.realclearpolitics.com/epolls/2016/president/us/general_election_trump_vs_clinton-5491.html#polls")
+
+# Scrape the data
+polls <- realclearpolitics_all %>% 
+  html_node(xpath = '//*[@id="polling-data-full"]/table') %>% 
+  html_table() %>% 
+  filter(Poll != "RCP Average")
+
+# Function to convert string dates to actual dates
+get_first_date <- function(x){
+  last_year <- cumsum(x=="12/22 - 12/23")>0
+  dates <- str_split(x, " - ")
+  dates <- lapply(1:length(dates), function(x) as.Date(paste0(dates[[x]], 
+                                                              ifelse(last_year[x], "/2015", "/2016")), 
+                                                       format = "%m/%d/%Y"))
+  first_date <- lapply(dates, function(x) x[1]) %>% unlist
+  second_date <- lapply(dates, function(x) x[2])%>% unlist
+  data_frame(first_date = as.Date(first_date, origin = "1970-01-01"), 
+             second_date = as.Date(second_date, origin = "1970-01-01"))
+}
+
+# Convert dates to dates, impute MoE for missing polls with average of non-missing, 
+# and convert MoE to standard deviation (assuming MoE is the full 95% one sided interval length??)
+polls <- polls %>% 
+  mutate(start_date = get_first_date(Date)[[1]],
+         end_date = get_first_date(Date)[[2]],
+         N = as.numeric(gsub("[A-Z]*", "", Sample)),
+         MoE = as.numeric(MoE))%>% 
+  select(end_date, `Clinton (D)`, `Trump (R)`, MoE) %>% 
+  mutate(MoE = ifelse(is.na(MoE), mean(MoE, na.rm = T), MoE),
+         sigma = MoE/2) %>% 
+  arrange(end_date) %>% 
+  filter(!is.na(end_date))
+
+
+# Stretch out to get missing values for days with no polls
+polls3 <- left_join(data_frame(end_date = seq(from = min(polls$end_date), 
+                                              to= as.Date("2016-08-04"), 
+                                              by = "day")), polls) %>% 
+  group_by(end_date) %>%
+  mutate(N = 1:n()) %>%
+  rename(Clinton = `Clinton (D)`,
+         Trump = `Trump (R)`)
+
+
+# One row for each day, one column for each poll on that day, -9 for missing values
+Y_clinton <- polls3 %>% dcast(end_date ~ N, value.var = "Clinton") %>% 
+  dplyr::select(-end_date) %>% 
+  as.data.frame %>% as.matrix
+Y_clinton[is.na(Y_clinton)] <- -9
+
+Y_trump <- polls3 %>% dcast(end_date ~ N, value.var = "Trump") %>% 
+  dplyr::select(-end_date) %>% 
+  as.data.frame %>% as.matrix
+Y_trump[is.na(Y_trump)] <- -9
+
+# Do the same for margin of errors for those polls
+sigma <- polls3 %>% dcast(end_date ~ N, value.var = "sigma")%>% 
+  dplyr::select(-end_date)%>% 
+  as.data.frame %>% as.matrix
+sigma[is.na(sigma)] <- -9
+
+# Run the two models
+
+clinton_model <- stan("models/state_space_polls.stan", 
+                      data = list(T = nrow(Y_clinton), 
+                                  polls = ncol(Y_clinton), 
+                                  Y = Y_clinton, 
+                                  sigma = sigma,
+                                  initial_prior = 50), iter = 600)
+
+
+trump_model <- stan("models/state_space_polls.stan", 
+                    data = list(T = nrow(Y_trump), 
+                                polls = ncol(Y_trump), 
+                                Y = Y_trump, 
+                                sigma = sigma,
+                                initial_prior = 30), iter = 600)
+
+
+
+# Pull the state vectors
+
+mu_clinton <- extract(clinton_model, pars = "mu", permuted = T)[[1]] %>% 
+  as.data.frame
+
+mu_trump <- extract(trump_model, pars = "mu", permuted = T)[[1]] %>% 
+  as.data.frame
+
+# Rename to get dates
+names(mu_clinton) <- unique(paste0(polls3$end_date))
+names(mu_trump) <- unique(paste0(polls3$end_date))
+
+
+# summarise uncertainty for each date
+
+mu_ts_clinton <- mu_clinton %>% melt %>% 
+  mutate(date = as.Date(variable)) %>% 
+  group_by(date) %>% 
+  summarise(median = median(value),
+            lower = quantile(value, 0.025),
+            upper = quantile(value, 0.975),
+            candidate = "Clinton")
+
+mu_ts_trump <- mu_trump %>% melt %>% 
+  mutate(date = as.Date(variable)) %>% 
+  group_by(date) %>% 
+  summarise(median = median(value),
+            lower = quantile(value, 0.025),
+            upper = quantile(value, 0.975),
+            candidate = "Trump")
+
+# Plot results
+
+
+bind_rows(mu_ts_clinton, mu_ts_trump) %>% 
+  ggplot(aes(x = date)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper, fill = candidate),alpha = 0.1) +
+  geom_line(aes(y = median, colour = candidate)) +
+  ylim(30, 60) +
+  scale_colour_manual(values = c("blue", "red"), "Candidate") +
+  scale_fill_manual(values = c("blue", "red"), guide = F) +
+  geom_point(data = polls3, aes(x = end_date, y = `Clinton`), size = 0.2, colour = "blue") +
+  geom_point(data = polls3, aes(x = end_date, y = Trump), size = 0.2, colour = "red") +
+  theme_lendable() + # Thanks to my employer for their awesome theme!
+  xlab("Date") +
+  ylab("Implied vote share") +
+  ggtitle("Poll aggregation with state-space smoothing", 
+          subtitle= paste("Prior of 50% initial for Clinton, 30% for Trump on", min(polls3$end_date)))
+
+```
