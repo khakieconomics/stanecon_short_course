@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>A brief introduction to econometrics in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics.">
+  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+
+  <meta property="og:title" content="A brief introduction to econometrics in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  <meta name="github-repo" content="khakieconomist/BSEcon" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="A brief introduction to econometrics in Stan" />
+  
+  <meta name="twitter:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  
+
+<meta name="author" content="James Savage">
+
+
+<meta name="date" content="2017-04-30">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+
+<link rel="next" href="intro.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-structure"><i class="fa fa-check"></i>The structure</a><ul>
+<li class="chapter" data-level="0.0.1" data-path="index.html"><a href="index.html#a-note-on-data"><i class="fa fa-check"></i><b>0.0.1</b> A note on data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#modern-statistical-workflow"><i class="fa fa-check"></i><b>1.1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1.1" data-path="intro.html"><a href="intro.html#example-a-model-of-wages"><i class="fa fa-check"></i><b>1.1.1</b> Example: A model of wages</a></li>
+<li class="chapter" data-level="1.1.2" data-path="intro.html"><a href="intro.html#step-1-writing-out-the-probability-model"><i class="fa fa-check"></i><b>1.1.2</b> Step 1: Writing out the probability model</a></li>
+<li class="chapter" data-level="1.1.3" data-path="intro.html"><a href="intro.html#step-2-simulating-the-model-with-known-parameters"><i class="fa fa-check"></i><b>1.1.3</b> Step 2: Simulating the model with known parameters</a></li>
+<li class="chapter" data-level="1.1.4" data-path="intro.html"><a href="intro.html#writing-out-the-stan-model-to-recover-known-parameters"><i class="fa fa-check"></i><b>1.1.4</b> Writing out the Stan model to recover known parameters</a></li>
+<li class="chapter" data-level="1.1.5" data-path="intro.html"><a href="intro.html#model-inspection"><i class="fa fa-check"></i><b>1.1.5</b> Model inspection</a></li>
+<li class="chapter" data-level="1.1.6" data-path="intro.html"><a href="intro.html#model-comparison"><i class="fa fa-check"></i><b>1.1.6</b> Model comparison</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="intro.html"><a href="intro.html#tools-of-the-trade-borrowing-from-software-engineering"><i class="fa fa-check"></i><b>1.2</b> Tools of the trade: borrowing from software engineering</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="hierarchical.html"><a href="hierarchical.html"><i class="fa fa-check"></i><b>2</b> An introduction to hierarchical modeling</a><ul>
+<li class="chapter" data-level="2.0.1" data-path="hierarchical.html"><a href="hierarchical.html#what-is-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.1</b> What is hierarchical modeling</a></li>
+<li class="chapter" data-level="2.0.2" data-path="hierarchical.html"><a href="hierarchical.html#why-do-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.2</b> Why do hierarchical modeling?</a></li>
+<li class="chapter" data-level="2.0.3" data-path="hierarchical.html"><a href="hierarchical.html#exchangeability"><i class="fa fa-check"></i><b>2.0.3</b> Exchangeability</a></li>
+<li class="chapter" data-level="2.0.4" data-path="hierarchical.html"><a href="hierarchical.html#conditional-exchangeability-and-the-bafumi-gelman-correction"><i class="fa fa-check"></i><b>2.0.4</b> Conditional exchangeability and the Bafumi Gelman correction</a></li>
+<li class="chapter" data-level="2.0.5" data-path="hierarchical.html"><a href="hierarchical.html#exercise-1-hierarchical-priors"><i class="fa fa-check"></i><b>2.0.5</b> Exercise 1: Hierarchical priors</a></li>
+<li class="chapter" data-level="2.0.6" data-path="hierarchical.html"><a href="hierarchical.html#a-very-basic-underlying-model"><i class="fa fa-check"></i><b>2.0.6</b> A very basic underlying model</a></li>
+<li class="chapter" data-level="2.0.7" data-path="hierarchical.html"><a href="hierarchical.html#the-hierarchical-prior"><i class="fa fa-check"></i><b>2.0.7</b> The hierarchical prior</a></li>
+<li class="chapter" data-level="2.0.8" data-path="hierarchical.html"><a href="hierarchical.html#a-note-on-reparameterizing"><i class="fa fa-check"></i><b>2.0.8</b> A note on reparameterizing</a></li>
+<li class="chapter" data-level="2.0.9" data-path="hierarchical.html"><a href="hierarchical.html#exercise-2-panel-data"><i class="fa fa-check"></i><b>2.0.9</b> Exercise 2: Panel data</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="funtimeseries.html"><a href="funtimeseries.html"><i class="fa fa-check"></i><b>3</b> Some fun time series models</a><ul>
+<li class="chapter" data-level="3.1" data-path="funtimeseries.html"><a href="funtimeseries.html#this-session"><i class="fa fa-check"></i><b>3.1</b> This session</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="funtimeseries.html"><a href="funtimeseries.html#finite-mixtures"><i class="fa fa-check"></i><b>3.1.1</b> Finite mixtures</a></li>
+<li class="chapter" data-level="3.1.2" data-path="funtimeseries.html"><a href="funtimeseries.html#writing-out-the-model"><i class="fa fa-check"></i><b>3.1.2</b> Writing out the model</a></li>
+<li class="chapter" data-level="3.1.3" data-path="funtimeseries.html"><a href="funtimeseries.html#recapturing-known-unknowns"><i class="fa fa-check"></i><b>3.1.3</b> Recapturing ‘known unknowns’</a></li>
+<li class="chapter" data-level="3.1.4" data-path="funtimeseries.html"><a href="funtimeseries.html#taking-the-model-to-real-data"><i class="fa fa-check"></i><b>3.1.4</b> Taking the model to real data</a></li>
+<li class="chapter" data-level="3.1.5" data-path="funtimeseries.html"><a href="funtimeseries.html#building-up-the-model"><i class="fa fa-check"></i><b>3.1.5</b> Building up the model</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model-involving-polls"><i class="fa fa-check"></i><b>3.2</b> A state space model involving polls</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="funtimeseries.html"><a href="funtimeseries.html#multi-measurement-model-and-the-8-schools-example"><i class="fa fa-check"></i><b>3.2.1</b> Multi-measurement model and the 8 schools example</a></li>
+<li class="chapter" data-level="3.2.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model"><i class="fa fa-check"></i><b>3.2.2</b> A state-space model</a></li>
+<li class="chapter" data-level="3.2.3" data-path="funtimeseries.html"><a href="funtimeseries.html#putting-it-together"><i class="fa fa-check"></i><b>3.2.3</b> Putting it together</a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">A brief introduction to econometrics in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">A brief introduction to econometrics in Stan</h1>
+<h4 class="author"><em>James Savage</em></h4>
+<h4 class="date"><em>2017-04-30</em></h4>
+</div>
+<div id="about" class="section level1 unnumbered">
+<h1>About</h1>
+<p>These notes are for a one-day short course in econometrics using Stan. The main reason to learn Stan is to fit models that are difficult to fit using other software. Such models might include models with high-dimensional random effects (about which we want to draw inference), models with complex or multi-stage likelihoods, or models with latent data structures. A second reason to learn Stan is that you want to conduct Bayesian analysis on workhorse models; perhaps you have good prior information, or are attracted to the possibility of making probabilistic statements about predictions and parameter estimates.</p>
+<p>While this second reason is worthwhile, it is not the aim of this course. This course introduces a few workhorse models in order to give you the skills to build richer models that extract the most information from your data. There are three sessions:</p>
+<ol style="list-style-type: decimal">
+<li>An introduction to Modern Statistical Workflow, using an instrumental variables model as the example. We will also touch on Simultaneous Equations Modeling.</li>
+<li>Hierarchical models and hierarchical priors, of which we can consider panel data a special case. We’ll cover fixed and random effects, post-stratification, and the Gelman-Bafumi correction.</li>
+<li>An introduction to time-series models, including time-varying parameters, latent factor models, and structural VARs.</li>
+</ol>
+<p>These notes have a few idiosyncracies:</p>
+<blockquote>
+<p>Tricks and shortcuts will look like this</p>
+</blockquote>
+<p>The code examples live in the <code>models/</code> folder of the book’s repository, (<a href="https://github.com/khakieconomics/shortcourse/models" class="uri">https://github.com/khakieconomics/shortcourse/models</a>).</p>
+<p>We use two computing languages in these notes. The first is Stan, a powerful modeling language that allows us to express and estimate probabilistic models with continuous parameter spaces. Stan programs are prefaced with their location in the <code>models/</code> folder, like so:</p>
+<pre><code>// models/model_1.stan
+// ...  model code here</code></pre>
+<p>We also use the <code>R</code> language, for data preparation, calling Stan models, and visualising model results. R programs live in the <code>scripts/</code> folder; they typically read data from the <code>data/</code> folder, and liberally use <code>magrittr</code> syntax with <code>dplyr</code>. If this syntax is unfamiliar to you, it is worth taking a look at the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html">excellent vignette</a> to the <code>dplyr</code> package. Like the Stan models, all R code in the book is prefaced with its location in the book’s directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># scripts/intro.R</span>
+<span class="co"># ... data work here</span></code></pre></div>
+<p>It is not necessary to be an R aficionado to make the most of these notes. Stan programs can be called from within Stata, Matlab, Mathematica, Julia and Python. If you are more comfortable using those languages than R for data preparation work, then you should be able to implement all the models in this book using those interfaces. Further documentation on calling Stan from other environments is available at <a href="http://mc-stan.org/interfaces/" class="uri">http://mc-stan.org/interfaces/</a>.</p>
+<p>While Stan can be called quite easily from these other programming environments, the R implementation is more fully-fleshed—especially for model checking and post-processing. For this reason we use the R implementation of Stan, <code>rstan</code> in this book.</p>
+<div id="the-structure" class="section level2 unnumbered">
+<h2>The structure</h2>
+<p>An important premise in these is that we should only build richer, more complex models when simple ones will not do. After explaining the necessary preliminary concepts, Each session is set up around this theme.</p>
+<p>The first session offers an introduction to Stan, walking you through the steps of building, estimating, and checking a probability model. We call this procedure <em>Modern Statistical Workflow</em>, and recommend it be followed for essentially all modeling tasks. If you’re an experienced modeler and understand the preliminaries already, this is a good place to start.</p>
+<p>The second session covers hierarchical modeling. The central notion in hierarchical modeling is that our data has some hierarchy. Some examples might illustrate the idea:</p>
+<ul>
+<li>Our observations are noisy measures of some true value, about which we want to infer.</li>
+<li>We have multiple observations from many administrative units, for example students within a school within a region.</li>
+<li>We observe many individuals over time (panel data).</li>
+</ul>
+<p>There is a large cultural difference between panel/hierarchical data as used by econometricians and as used by Bayesian statisticians. We’ll take a more statistical approach in this book. The big difference is that Bayesian statisticians think that the primary goal of using hierarchical data is to fit a model <em>at the level of the individual</em>, but recognising that information from other individuals might be useful in estimating that model. It’s a crass simplification, but economists tend to view the goal of using panel data as helping to estimate an unbiased or less biased treatment effect that abstracts from unobserved information fixed within the individual. These are different goals, and we will discuss them later.</p>
+<p>We will cover fixed and random effects, and the Gelman-Bafumi correction (which makes random effects models more widely applicable). We also discuss how to incorporate instruments in these models.</p>
+<p>The last session introduces some fun time-series models. Chapter seven illustrates how to implement more advanced multivariate time-series models. These include Structural Vector Autoregressions (SVAR), factor models, and state-space methods, including time-varying parameter regressions, and low-to-high frequency missing values interpolation.</p>
+<div id="a-note-on-data" class="section level3">
+<h3><span class="header-section-number">0.0.1</span> A note on data</h3>
+<p>Through this short course, we will not use any real data, but rather force you to simulate fake data where the “unknowns are known”. This is very good practice, both from the perspective of model checking, but also helping you to understand the underlying data generating process that you are trying to model.</p>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="intro.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

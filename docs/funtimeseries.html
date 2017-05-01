@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>A brief introduction to econometrics in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics.">
+  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+
+  <meta property="og:title" content="A brief introduction to econometrics in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  <meta name="github-repo" content="khakieconomist/BSEcon" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="A brief introduction to econometrics in Stan" />
+  
+  <meta name="twitter:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  
+
+<meta name="author" content="James Savage">
+
+
+<meta name="date" content="2017-04-30">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="hierarchical.html">
+
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-structure"><i class="fa fa-check"></i>The structure</a><ul>
+<li class="chapter" data-level="0.0.1" data-path="index.html"><a href="index.html#a-note-on-data"><i class="fa fa-check"></i><b>0.0.1</b> A note on data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#modern-statistical-workflow"><i class="fa fa-check"></i><b>1.1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1.1" data-path="intro.html"><a href="intro.html#example-a-model-of-wages"><i class="fa fa-check"></i><b>1.1.1</b> Example: A model of wages</a></li>
+<li class="chapter" data-level="1.1.2" data-path="intro.html"><a href="intro.html#step-1-writing-out-the-probability-model"><i class="fa fa-check"></i><b>1.1.2</b> Step 1: Writing out the probability model</a></li>
+<li class="chapter" data-level="1.1.3" data-path="intro.html"><a href="intro.html#step-2-simulating-the-model-with-known-parameters"><i class="fa fa-check"></i><b>1.1.3</b> Step 2: Simulating the model with known parameters</a></li>
+<li class="chapter" data-level="1.1.4" data-path="intro.html"><a href="intro.html#writing-out-the-stan-model-to-recover-known-parameters"><i class="fa fa-check"></i><b>1.1.4</b> Writing out the Stan model to recover known parameters</a></li>
+<li class="chapter" data-level="1.1.5" data-path="intro.html"><a href="intro.html#model-inspection"><i class="fa fa-check"></i><b>1.1.5</b> Model inspection</a></li>
+<li class="chapter" data-level="1.1.6" data-path="intro.html"><a href="intro.html#model-comparison"><i class="fa fa-check"></i><b>1.1.6</b> Model comparison</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="intro.html"><a href="intro.html#tools-of-the-trade-borrowing-from-software-engineering"><i class="fa fa-check"></i><b>1.2</b> Tools of the trade: borrowing from software engineering</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="hierarchical.html"><a href="hierarchical.html"><i class="fa fa-check"></i><b>2</b> An introduction to hierarchical modeling</a><ul>
+<li class="chapter" data-level="2.0.1" data-path="hierarchical.html"><a href="hierarchical.html#what-is-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.1</b> What is hierarchical modeling</a></li>
+<li class="chapter" data-level="2.0.2" data-path="hierarchical.html"><a href="hierarchical.html#why-do-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.2</b> Why do hierarchical modeling?</a></li>
+<li class="chapter" data-level="2.0.3" data-path="hierarchical.html"><a href="hierarchical.html#exchangeability"><i class="fa fa-check"></i><b>2.0.3</b> Exchangeability</a></li>
+<li class="chapter" data-level="2.0.4" data-path="hierarchical.html"><a href="hierarchical.html#conditional-exchangeability-and-the-bafumi-gelman-correction"><i class="fa fa-check"></i><b>2.0.4</b> Conditional exchangeability and the Bafumi Gelman correction</a></li>
+<li class="chapter" data-level="2.0.5" data-path="hierarchical.html"><a href="hierarchical.html#exercise-1-hierarchical-priors"><i class="fa fa-check"></i><b>2.0.5</b> Exercise 1: Hierarchical priors</a></li>
+<li class="chapter" data-level="2.0.6" data-path="hierarchical.html"><a href="hierarchical.html#a-very-basic-underlying-model"><i class="fa fa-check"></i><b>2.0.6</b> A very basic underlying model</a></li>
+<li class="chapter" data-level="2.0.7" data-path="hierarchical.html"><a href="hierarchical.html#the-hierarchical-prior"><i class="fa fa-check"></i><b>2.0.7</b> The hierarchical prior</a></li>
+<li class="chapter" data-level="2.0.8" data-path="hierarchical.html"><a href="hierarchical.html#a-note-on-reparameterizing"><i class="fa fa-check"></i><b>2.0.8</b> A note on reparameterizing</a></li>
+<li class="chapter" data-level="2.0.9" data-path="hierarchical.html"><a href="hierarchical.html#exercise-2-panel-data"><i class="fa fa-check"></i><b>2.0.9</b> Exercise 2: Panel data</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="funtimeseries.html"><a href="funtimeseries.html"><i class="fa fa-check"></i><b>3</b> Some fun time series models</a><ul>
+<li class="chapter" data-level="3.1" data-path="funtimeseries.html"><a href="funtimeseries.html#this-session"><i class="fa fa-check"></i><b>3.1</b> This session</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="funtimeseries.html"><a href="funtimeseries.html#finite-mixtures"><i class="fa fa-check"></i><b>3.1.1</b> Finite mixtures</a></li>
+<li class="chapter" data-level="3.1.2" data-path="funtimeseries.html"><a href="funtimeseries.html#writing-out-the-model"><i class="fa fa-check"></i><b>3.1.2</b> Writing out the model</a></li>
+<li class="chapter" data-level="3.1.3" data-path="funtimeseries.html"><a href="funtimeseries.html#recapturing-known-unknowns"><i class="fa fa-check"></i><b>3.1.3</b> Recapturing ‘known unknowns’</a></li>
+<li class="chapter" data-level="3.1.4" data-path="funtimeseries.html"><a href="funtimeseries.html#taking-the-model-to-real-data"><i class="fa fa-check"></i><b>3.1.4</b> Taking the model to real data</a></li>
+<li class="chapter" data-level="3.1.5" data-path="funtimeseries.html"><a href="funtimeseries.html#building-up-the-model"><i class="fa fa-check"></i><b>3.1.5</b> Building up the model</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model-involving-polls"><i class="fa fa-check"></i><b>3.2</b> A state space model involving polls</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="funtimeseries.html"><a href="funtimeseries.html#multi-measurement-model-and-the-8-schools-example"><i class="fa fa-check"></i><b>3.2.1</b> Multi-measurement model and the 8 schools example</a></li>
+<li class="chapter" data-level="3.2.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model"><i class="fa fa-check"></i><b>3.2.2</b> A state-space model</a></li>
+<li class="chapter" data-level="3.2.3" data-path="funtimeseries.html"><a href="funtimeseries.html#putting-it-together"><i class="fa fa-check"></i><b>3.2.3</b> Putting it together</a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">A brief introduction to econometrics in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="funtimeseries" class="section level1">
+<h1><span class="header-section-number">Chapter 3</span> Some fun time series models</h1>
+<div id="this-session" class="section level2">
+<h2><span class="header-section-number">3.1</span> This session</h2>
+<p>In this session, we’ll cover two of the things that Stan lets you do quite simply: implement state space models, and finite mixtures.</p>
+<div id="finite-mixtures" class="section level3">
+<h3><span class="header-section-number">3.1.1</span> Finite mixtures</h3>
+<p>In a post <a href="https://modernstatisticalworkflow.blogspot.com/2016/10/finite-mixture-models-in-stan.html">here</a>, I describe a simple model in which each observation of our data could have one of two densities. We estimated the parameters of both densities, and the probability of the data coming from either. While finite mixture models as in the last post are a useful learning aid, we might want richer models for applied work. In particular, we might want the probability of our data having each density to vary across observations. This is the first of two posts dedicated to this topic. I gave a <a href="https://dl.dropboxusercontent.com/u/63100926/become_a_bayesian_shareable.html">talk</a> covering some of this also (best viewed in Safari).</p>
+<p>For sake of an example, consider this: the daily returns series of a stock has two states. In the first, the stock is ‘priced to perfection’, and so the price is an I(1) random walk (daily returns are mean stationary). In the second, there is momentum—here, daily returns have AR(1) structure. Explicitly, for daily log returns <span class="math inline">\(r_{t}\)</span>:</p>
+<p>State 1: <span class="math inline">\(r_{t} \sim \mbox{normal}(\alpha_{1}, \sigma_{1})\)</span></p>
+<p>State 2: <span class="math inline">\(r_{t} \sim \mbox{normal}(\alpha_{2} + \rho_{1} r_{t-1}, \sigma_{2})\)</span></p>
+<p>When we observe a value of <span class="math inline">\(r_{t}\)</span>, we don’t know for sure whether it came from the first or second model–that is precisely what we want to infer. For this, we need a model for the probability that an observation came from each state <span class="math inline">\(s_{t}\in 1, 2\)</span>. One such model could be:</p>
+<p><span class="math display">\[
+\mbox{prob}(s_{t}=1 | \mathcal{I}_{t}) = \mbox{Logit}^{-1}(\mu_{t})
+\]</span></p>
+<p>with</p>
+<p><span class="math display">\[
+\mu_{t} \sim \mbox{normal}(\alpha_{3} + \rho_{2}\mu_{t-1} + f(\mathcal{I}_{t}), \sigma_{3})
+\]</span></p>
+<p>Here, <span class="math inline">\(f(\mathcal{I}_{t})\)</span> is a function of the information available at the beginning of day <span class="math inline">\(t\)</span>. If we had interesting information about sentiment, or news etc., it could go in here. For simplicity, let’s say <span class="math inline">\(f(\mathcal{I}_{t}) = \beta r_{t-1}\)</span>.</p>
+<p>Under this specification (and for a vector containing all parameters, <span class="math inline">\(\theta\)</span>), we can specify the likelihood contribution of an observation. It is simply the weighted average of likelihoods under each candidate data generating process, where the weights are the probabilities that the data comes from each density.</p>
+<p><span class="math display">\[
+p(r_{t} | \theta) = \mbox{Logit}^{-1}(\mu_{t})\, \mbox{normal}(r_{t}|\, \alpha_{1}, \sigma_{1}) + (1-\mbox{Logit}^{-1}(\mu_{t}))\, \mbox{normal}(r_{t}|\, \alpha_{2} + \rho r_{t-1}, \sigma_{2})
+\]</span></p>
+<p>As discussed in the last post, we work in log likelihoods, not likelihoods. This means we should use the <code>log_sum_exp()</code> function in Stan. This means that we express the log likelihood contribution of a single point as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">log_sum_exp</span>(<span class="kw">log</span>(<span class="kw">inv_logit</span>(mu[t])) +<span class="st"> </span><span class="kw">normal_lpdf</span>(r[t] |<span class="st"> </span>alpha[<span class="dv">1</span>], sigma[<span class="dv">1</span>]),
+            <span class="kw">log</span>((<span class="dv">1</span> -<span class="st"> </span><span class="kw">inv_logit</span>(mu[t]))) +<span class="st"> </span><span class="kw">normal_lpdf</span>(r[t] |<span class="st"> </span>alpha[<span class="dv">2</span>] +<span class="st"> </span>rho[<span class="dv">1</span>], sigma[<span class="dv">2</span>]))</code></pre></div>
+<p>Stan has recently added another function which performs the same calculation, but makes writing it out a bit easier. For two log densities <code>lp1</code>, <code>lp2</code> and a mixing probability <code>theta</code>, we have</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">log_mix</span>(theta, lp1, lp2) =<span class="st"> </span><span class="kw">log_sum_exp</span>(<span class="kw">log</span>(theta) +<span class="st"> </span>lp1,
+                                       <span class="kw">log</span>(<span class="dv">1</span>-theta) +<span class="st"> </span>lp2)</code></pre></div>
+</div>
+<div id="writing-out-the-model" class="section level3">
+<h3><span class="header-section-number">3.1.2</span> Writing out the model</h3>
+<p>The Stan code for the model is:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">/<span class="er">/</span><span class="st"> </span>saved as time_varying_finite_mixtures.stan
+data {
+  int T;
+  vector[T] r;
+}
+parameters {
+  vector[T] mu;
+  vector[<span class="dv">2</span>] rho;
+  real beta;
+  vector&lt;lower =<span class="st"> </span><span class="dv">0</span>&gt;[<span class="dv">3</span>] sigma;
+  vector[<span class="dv">3</span>] alpha; 
+}
+model {
+  /<span class="er">/</span><span class="st"> </span>priors 
+  mu[<span class="dv">1</span>] ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">0</span>, .<span class="dv">1</span>);
+  sigma ~<span class="st"> </span><span class="kw">cauchy</span>(<span class="dv">0</span>, <span class="fl">0.5</span>);
+  rho ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">1</span>, .<span class="dv">1</span>);
+  beta~<span class="st"> </span><span class="kw">normal</span>(.<span class="dv">5</span>, .<span class="dv">25</span>);
+  alpha[<span class="dv">1</span>:<span class="dv">2</span>] ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">0</span>, <span class="fl">0.1</span>);
+  alpha[<span class="dv">3</span>] ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">0</span>, <span class="dv">1</span>);
+
+  /<span class="er">/</span><span class="st"> </span>likelihood
+  for(t in <span class="dv">2</span>:T) {
+    mu[t] ~<span class="st"> </span><span class="kw">normal</span>(alpha[<span class="dv">3</span>] +<span class="st"> </span>rho[<span class="dv">1</span>]*mu[t<span class="dv">-1</span>] +<span class="st"> </span>beta*<span class="st"> </span>r[t<span class="dv">-1</span>], sigma[<span class="dv">3</span>]);
+
+    target +<span class="er">=</span><span class="st"> </span><span class="kw">log_mix</span>(<span class="kw">inv_logit</span>(mu[t]), 
+                      <span class="kw">normal_lpdf</span>(r[t] |<span class="st"> </span>alpha[<span class="dv">1</span>], sigma[<span class="dv">1</span>]), 
+                      <span class="kw">normal_lpdf</span>(r[t] |<span class="st"> </span>alpha[<span class="dv">2</span>] +<span class="st"> </span>rho[<span class="dv">2</span>] *<span class="st"> </span>r[t<span class="dv">-1</span>], sigma[<span class="dv">2</span>]));
+  }
+}</code></pre></div>
+</div>
+<div id="recapturing-known-unknowns" class="section level3">
+<h3><span class="header-section-number">3.1.3</span> Recapturing ‘known unknowns’</h3>
+<p>As should be clear by now, I believe strongly that we should simulate from the model and make sure that we can recapture “known unknowns” before taking the model to real data. Below we simulate some fake data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Set some fake parameters</span>
+alpha1 &lt;-<span class="st"> </span>-<span class="fl">0.01</span>
+alpha2 &lt;-<span class="st"> </span><span class="fl">0.015</span>
+rho1 &lt;-<span class="st"> </span><span class="fl">0.95</span>
+rho2 &lt;-<span class="st"> </span><span class="fl">0.8</span>
+beta &lt;-<span class="st"> </span><span class="fl">0.5</span>
+
+sigma1 &lt;-<span class="st"> </span><span class="fl">0.05</span>
+sigma2 &lt;-<span class="st"> </span><span class="fl">0.03</span>
+sigma3 &lt;-<span class="st"> </span><span class="fl">0.3</span>
+T &lt;-<span class="st"> </span><span class="dv">500</span>
+r &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, T)
+r[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">0</span>
+
+mu &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, T)
+z &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, T)
+mu[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">0</span>
+z[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1</span>
+
+
+<span class="co"># Simulate the data series</span>
+for(t in <span class="dv">2</span>:T) {
+  mu[t]  &lt;-<span class="st"> </span>rho1 *<span class="st"> </span>mu[t<span class="dv">-1</span>] +<span class="st"> </span>beta*(r[t<span class="dv">-1</span>]) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma3)
+  prob &lt;-<span class="st"> </span>arm::<span class="kw">invlogit</span>(mu[t])
+  z[t] &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>, <span class="dt">prob =</span> <span class="kw">c</span>(prob, <span class="dv">1</span>-prob))
+  
+  if(z[t]==<span class="dv">1</span>) {
+    <span class="co"># random walk state</span>
+    r[t] &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>, alpha1, sigma1)
+  } else {
+    <span class="co"># momentum state</span>
+    r[t] &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>, alpha2 +<span class="st"> </span>rho2*r[t<span class="dv">-1</span>], sigma2)
+  }
+}</code></pre></div>
+<p>You should plot your data before doing anything. Let’s take a look.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot the returns</span>
+<span class="kw">plot.ts</span>(r)
+<span class="co"># Plot the probability of the random walk state</span>
+<span class="kw">plot.ts</span>(arm::<span class="kw">invlogit</span>(mu))</code></pre></div>
+<p>Looks good! Now we compile and run the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compiled_model &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="st">&quot;time_varying_finite_mixtures.stan&quot;</span>)
+
+estimated_model &lt;-<span class="st"> </span><span class="kw">sampling</span>(compiled_model, <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">r =</span> r, <span class="dt">T =</span> T), <span class="dt">cores =</span> <span class="dv">4</span>, <span class="dt">chains =</span> <span class="dv">4</span>)</code></pre></div>
+<p>Now we inspect the parameter estimates, which should align with those in our data generating process.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(estimated_model, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;rho&quot;</span>, <span class="st">&quot;sigma&quot;</span>))</code></pre></div>
+<p>It seems that most of the parameters appear to have estimated quite cleanly–most of the Rhats are fairly close, to 1, with the exception of the standard deviation of the updates in the latent series (which will be very weakly identified, given we don’t observe <code>mu</code>). We would fix this by adding better prior information to the model.</p>
+</div>
+<div id="taking-the-model-to-real-data" class="section level3">
+<h3><span class="header-section-number">3.1.4</span> Taking the model to real data</h3>
+<p>Now we know that our program can recapture a known model, we can take it to some real data. In this case, we’ll use the log differences in sequential adjusted closing prices for Apple’s common stock. With Apple being such a large, well-researched (and highly liquid) stock, we should expect that it spends almost all time in the random walk state. Let’s see what the data say!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Now with real data! </span>
+aapl &lt;-<span class="st"> </span>Quandl::<span class="kw">Quandl</span>(<span class="st">&quot;YAHOO/AAPL&quot;</span>)
+
+aapl &lt;-<span class="st"> </span>aapl %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Date =</span> <span class="kw">as.Date</span>(Date)) %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(Date) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">l_ac =</span> <span class="kw">log</span>(<span class="st">`</span><span class="dt">Adjusted Close</span><span class="st">`</span>),
+         <span class="dt">dl_ac =</span> <span class="kw">c</span>(<span class="ot">NA</span>, <span class="kw">diff</span>(l_ac))) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Date &gt;<span class="st"> &quot;2015-01-01&quot;</span>)
+
+aapl_mod &lt;-<span class="st"> </span><span class="kw">sampling</span>(compiled_model, <span class="dt">data=</span> <span class="kw">list</span>(<span class="dt">T =</span> <span class="kw">nrow</span>(aapl), <span class="dt">r =</span> aapl$dl_ac*<span class="dv">100</span>))</code></pre></div>
+<p>Now check that the model has fit properly</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">shinystan::<span class="kw">launch_shinystan</span>(aapl_mod)</code></pre></div>
+<p>And finally plot the probability of being in each state.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot1 &lt;-<span class="st"> </span>aapl_mod %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">as.data.frame</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="kw">contains</span>(<span class="st">&quot;mu&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">melt</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(variable) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">lower =</span> <span class="kw">quantile</span>(value, <span class="fl">0.95</span>), 
+            <span class="dt">median =</span> <span class="kw">median</span>(value),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(value, <span class="fl">0.05</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> aapl$Date,
+         <span class="dt">ac =</span> aapl$l_ac) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> arm::<span class="kw">invlogit</span>(lower), <span class="dt">ymax =</span> arm::<span class="kw">invlogit</span>(upper)), <span class="dt">fill=</span> <span class="st">&quot;orange&quot;</span>, <span class="dt">alpha =</span> <span class="fl">0.4</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> arm::<span class="kw">invlogit</span>(median))) +
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>() +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Date&quot;</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Probability of random walk model&quot;</span>)
+
+
+plot2 &lt;-<span class="st"> </span>aapl_mod %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">as.data.frame</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="kw">contains</span>(<span class="st">&quot;mu&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">melt</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(variable) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">lower =</span> <span class="kw">quantile</span>(value, <span class="fl">0.95</span>), 
+            <span class="dt">median =</span> <span class="kw">median</span>(value),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(value, <span class="fl">0.05</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> aapl$Date,
+         <span class="dt">ac =</span> aapl$<span class="st">`</span><span class="dt">Adjusted Close</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> ac)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>() +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Date&quot;</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Adjusted Close&quot;</span>)
+
+gridExtra::<span class="kw">grid.arrange</span>(plot1, plot2)</code></pre></div>
+<p>And there we go! As expected, Apple spends almost all their time in the random walk state, but, surprisingly, appears to have had a few periods with some genuine (mainly negative) momentum.</p>
+</div>
+<div id="building-up-the-model" class="section level3">
+<h3><span class="header-section-number">3.1.5</span> Building up the model</h3>
+<p>The main problem with this model is that our latent state <span class="math inline">\(\mu\)</span> can only really vary so much from period to period. That can delay the response to the appearance of a new state, and slow the process of “flipping back” into the regular state. One way of getting around this is to have a discrete state with more flexibility in flipping between states. We’ll explore this in the next post, on Regime-Switching models.</p>
+</div>
+</div>
+<div id="a-state-space-model-involving-polls" class="section level2">
+<h2><span class="header-section-number">3.2</span> A state space model involving polls</h2>
+<p>This tutorial covers how to build a low-to-high frequency interpolation model in which we have possibly many sources of information that occur at various frequencies. The example I’ll use is drawing inference about the preference shares of Clinton and Trump in the current presidential campaign. This is a good example for this sort of imputation:</p>
+<ul>
+<li>Data (polls) are sporadically released. Sometimes we have many released simultaneously; at other times there may be many days with no releases.</li>
+<li>The various polls don’t necessarily agree. They might have different methodologies or sampling issues, resulting in quite different outcomes. We want to build a model that can incorporate this.</li>
+</ul>
+<p>There are two ingredients to the polling model. A multi-measurement model, typified by Rubin’s 8 schools example. And a state-space model. Let’s briefly describe these.</p>
+<div id="multi-measurement-model-and-the-8-schools-example" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Multi-measurement model and the 8 schools example</h3>
+<p>Let’s say we run a randomized control trial in 8 schools. Each school <span class="math inline">\(i\)</span> reports its own treatment effect <span class="math inline">\(te_{i}\)</span>, which has a standard error <span class="math inline">\(\sigma_{i}\)</span>. There are two questions the 8-schools model tries to answer:</p>
+<ul>
+<li>If you administer the experiment at one of these schools, say, school 1, and have your estimate of the treatment effect <span class="math inline">\(te_{1}\)</span>, what do you expect would be the treatment effect if you were to run the experiment again? In particular, would your expectations of the treatment effect in the next experiment change once you learn the treatment effects estimated from the experiments in the other schools?</li>
+<li>If you roll out the experiment at a new school (school <span class="math inline">\(9\)</span>), what do we expect the treatment effect to be?</li>
+</ul>
+<p>The statistical model that Rubin proposed is that each school has its own <em>true</em> latent treatment effect <span class="math inline">\(y_{i}\)</span>, around which our treatment effects are distributed.</p>
+<p><span class="math display">\[
+te_{i} \sim \mathcal{N}(y_{i}, \sigma_{i})
+\]</span></p>
+<p>These “true” but unobserved treatment effects are in turn distributed according to a common hyper-distribution with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\tau\)</span></p>
+<p><span class="math display">\[
+y_{i} \sim \mathcal{N}(\mu, \tau)
+\]</span></p>
+<p>Once we have priors for <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\tau\)</span>, we can estimate the above model with Bayesian methods.</p>
+</div>
+<div id="a-state-space-model" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> A state-space model</h3>
+<p>State-space models are a useful way of dealing with noisy or incomplete data, like our polling data. The idea is that we can divide our model into two parts:</p>
+<ul>
+<li><strong>The state</strong>. We don’t observe the state; it is a latent variable. But we know how it changes through time (or at least how large its potential changes are).</li>
+<li><strong>The measurement</strong>. Our state is measured with imprecision. The measurement model is the distribution of the data that we observe around the state.</li>
+</ul>
+<p>A simple example might be consumer confidence, an unobservable latent construct about which our survey responses should be distributed. So our state-space model would be:</p>
+<p>The state</p>
+<p><span class="math display">\[
+conf_{t} \sim \mathcal{N}(conf_{t-1}, \sigma)
+\]</span></p>
+<p>which simply says that consumer confidence is a random walk with normal innovations with a standard deviation <span class="math inline">\(\sigma\)</span>, and</p>
+<p><span class="math display">\[
+\mbox{survey measure}_{t} \sim \mbox{normal}(\mbox{conf}_{t}, \tau)
+\]</span></p>
+<p>which says that our survey measures are normally distributed around the true latent state, with standard deviation <span class="math inline">\(\tau\)</span>.</p>
+<p>Again, once we provide priors for the initial value of the state <span class="math inline">\(conf_{0}\)</span> and <span class="math inline">\(\tau\)</span>, we can estimate this model quite easily.</p>
+<p>The important thing to note is that we have a model for the state even if there is no observed measurement. That is, we know (the distribution for) how consumer confidence should progress even for the periods in which there are no consumer confidence surveys. This makes state-space models ideal for data with irregular frequencies or missing data.</p>
+</div>
+<div id="putting-it-together" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Putting it together</h3>
+<p>As you can see, these two models are very similar: they involve making inference about a latent quantity from noisy measurements. The first shows us how we can aggregate many noisy measurements together <em>within a single time period</em>, while the second shows us how to combine irregular noisy measures <em>over time</em>. We can now combine these two models to aggregate multiple polls over time.</p>
+<p>The data generating process I had in mind is a very simple model where each candidate’s preference share is an unobserved state, which polls try to measure. Unlike some volatile poll aggregators, I assume that the unobserved state can move according to a random walk with normal disturbances of standard deviation .25%. This greatly smoothes out the sorts of fluctuations we see around the conventions etc. We could estimate this parameter using fairly tight priors, but I just hard-code it in for simplicity.</p>
+<p>That is, we have the state for candidate <span class="math inline">\(c\)</span> in time <span class="math inline">\(t\)</span> evolving according to</p>
+<p><span class="math display">\[
+\mbox{Vote share}_{c, t} \sim \mathcal{N} (\mbox{Vote share}_{c, t-1}. 0.25)
+\]</span></p>
+<p>with measurements being made of this in the polls. Each poll <span class="math inline">\(p\)</span> at time <span class="math inline">\(t\)</span> is distributed according to</p>
+<p><span class="math display">\[
+\mbox{poll}_{c, p, t} \sim \mathcal{N} (\mbox{Vote share}_{c, t}. \tau)
+\]</span></p>
+<p>I give an initial state prior of 50% to Clinton and a 30% prior to Trump May of last year. As we get further from that initial period, the impact of the prior is dissipated.</p>
+<p>The code to download the data, run the model is below. You will need to have the most recent version of ggplot2 installed.</p>
+<pre><code>// saved as models/state_space_polls.stan
+
+data {
+  int polls; // number of polls
+  int T; // number of days
+  matrix[T, polls] Y; // polls
+  matrix[T, polls] sigma; // polls standard deviations
+  real initial_prior;
+}
+parameters {
+  vector[T] mu; // the mean of the polls
+  real&lt;lower = 0&gt; tau; // the standard deviation of the random effects
+  matrix[T, polls] shrunken_polls;
+}
+model {
+  // prior on initial difference
+  mu[1] ~ normal(initial_prior, 1);
+  tau ~ student_t(4, 0, 5);
+  // state model
+  for(t in 2:T) {
+    mu[t] ~ normal(mu[t-1], 0.25);
+  }
+  
+  // measurement model
+  for(t in 1:T) {
+    for(p in 1:polls) {
+      if(Y[t, p] != -9) {
+        Y[t,p]~ normal(shrunken_polls[t, p], sigma[t,p]);
+        shrunken_polls[t, p] ~ normal(mu[t], tau);
+      } else {
+        shrunken_polls[t, p] ~ normal(0, 1);
+      }
+    }
+  }
+}
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rvest); <span class="kw">library</span>(dplyr); <span class="kw">library</span>(ggplot2); <span class="kw">library</span>(rstan); <span class="kw">library</span>(reshape2); <span class="kw">library</span>(stringr); <span class="kw">library</span>(lubridate)
+<span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel::<span class="kw">detectCores</span>())
+<span class="kw">source</span>(<span class="st">&quot;models/theme.R&quot;</span>)
+
+<span class="co"># The polling data</span>
+realclearpolitics_all &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.realclearpolitics.com/epolls/2016/president/us/general_election_trump_vs_clinton-5491.html#polls&quot;</span>)
+
+<span class="co"># Scrape the data</span>
+polls &lt;-<span class="st"> </span>realclearpolitics_all %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">html_node</span>(<span class="dt">xpath =</span> <span class="st">&#39;//*[@id=&quot;polling-data-full&quot;]/table&#39;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">html_table</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Poll !=<span class="st"> &quot;RCP Average&quot;</span>)
+
+<span class="co"># Function to convert string dates to actual dates</span>
+get_first_date &lt;-<span class="st"> </span>function(x){
+  last_year &lt;-<span class="st"> </span><span class="kw">cumsum</span>(x==<span class="st">&quot;12/22 - 12/23&quot;</span>)&gt;<span class="dv">0</span>
+  dates &lt;-<span class="st"> </span><span class="kw">str_split</span>(x, <span class="st">&quot; - &quot;</span>)
+  dates &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span>:<span class="kw">length</span>(dates), function(x) <span class="kw">as.Date</span>(<span class="kw">paste0</span>(dates[[x]], 
+                                                              <span class="kw">ifelse</span>(last_year[x], <span class="st">&quot;/2015&quot;</span>, <span class="st">&quot;/2016&quot;</span>)), 
+                                                       <span class="dt">format =</span> <span class="st">&quot;%m/%d/%Y&quot;</span>))
+  first_date &lt;-<span class="st"> </span><span class="kw">lapply</span>(dates, function(x) x[<span class="dv">1</span>]) %&gt;%<span class="st"> </span>unlist
+  second_date &lt;-<span class="st"> </span><span class="kw">lapply</span>(dates, function(x) x[<span class="dv">2</span>])%&gt;%<span class="st"> </span>unlist
+  <span class="kw">data_frame</span>(<span class="dt">first_date =</span> <span class="kw">as.Date</span>(first_date, <span class="dt">origin =</span> <span class="st">&quot;1970-01-01&quot;</span>), 
+             <span class="dt">second_date =</span> <span class="kw">as.Date</span>(second_date, <span class="dt">origin =</span> <span class="st">&quot;1970-01-01&quot;</span>))
+}
+
+<span class="co"># Convert dates to dates, impute MoE for missing polls with average of non-missing, </span>
+<span class="co"># and convert MoE to standard deviation (assuming MoE is the full 95% one sided interval length??)</span>
+polls &lt;-<span class="st"> </span>polls %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">start_date =</span> <span class="kw">get_first_date</span>(Date)[[<span class="dv">1</span>]],
+         <span class="dt">end_date =</span> <span class="kw">get_first_date</span>(Date)[[<span class="dv">2</span>]],
+         <span class="dt">N =</span> <span class="kw">as.numeric</span>(<span class="kw">gsub</span>(<span class="st">&quot;[A-Z]*&quot;</span>, <span class="st">&quot;&quot;</span>, Sample)),
+         <span class="dt">MoE =</span> <span class="kw">as.numeric</span>(MoE))%&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(end_date, <span class="st">`</span><span class="dt">Clinton (D)</span><span class="st">`</span>, <span class="st">`</span><span class="dt">Trump (R)</span><span class="st">`</span>, MoE) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">MoE =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(MoE), <span class="kw">mean</span>(MoE, <span class="dt">na.rm =</span> T), MoE),
+         <span class="dt">sigma =</span> MoE/<span class="dv">2</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(end_date) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(end_date))
+
+
+<span class="co"># Stretch out to get missing values for days with no polls</span>
+polls3 &lt;-<span class="st"> </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">end_date =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="kw">min</span>(polls$end_date), 
+                                              <span class="dt">to=</span> <span class="kw">as.Date</span>(<span class="st">&quot;2016-08-04&quot;</span>), 
+                                              <span class="dt">by =</span> <span class="st">&quot;day&quot;</span>)), polls) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(end_date) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">N =</span> <span class="dv">1</span>:<span class="kw">n</span>()) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">Clinton =</span> <span class="st">`</span><span class="dt">Clinton (D)</span><span class="st">`</span>,
+         <span class="dt">Trump =</span> <span class="st">`</span><span class="dt">Trump (R)</span><span class="st">`</span>)
+
+
+<span class="co"># One row for each day, one column for each poll on that day, -9 for missing values</span>
+Y_clinton &lt;-<span class="st"> </span>polls3 %&gt;%<span class="st"> </span><span class="kw">dcast</span>(end_date ~<span class="st"> </span>N, <span class="dt">value.var =</span> <span class="st">&quot;Clinton&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">select</span>(-end_date) %&gt;%<span class="st"> </span>
+<span class="st">  </span>as.data.frame %&gt;%<span class="st"> </span>as.matrix
+Y_clinton[<span class="kw">is.na</span>(Y_clinton)] &lt;-<span class="st"> </span>-<span class="dv">9</span>
+
+Y_trump &lt;-<span class="st"> </span>polls3 %&gt;%<span class="st"> </span><span class="kw">dcast</span>(end_date ~<span class="st"> </span>N, <span class="dt">value.var =</span> <span class="st">&quot;Trump&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">select</span>(-end_date) %&gt;%<span class="st"> </span>
+<span class="st">  </span>as.data.frame %&gt;%<span class="st"> </span>as.matrix
+Y_trump[<span class="kw">is.na</span>(Y_trump)] &lt;-<span class="st"> </span>-<span class="dv">9</span>
+
+<span class="co"># Do the same for margin of errors for those polls</span>
+sigma &lt;-<span class="st"> </span>polls3 %&gt;%<span class="st"> </span><span class="kw">dcast</span>(end_date ~<span class="st"> </span>N, <span class="dt">value.var =</span> <span class="st">&quot;sigma&quot;</span>)%&gt;%<span class="st"> </span>
+<span class="st">  </span>dplyr::<span class="kw">select</span>(-end_date)%&gt;%<span class="st"> </span>
+<span class="st">  </span>as.data.frame %&gt;%<span class="st"> </span>as.matrix
+sigma[<span class="kw">is.na</span>(sigma)] &lt;-<span class="st"> </span>-<span class="dv">9</span>
+
+<span class="co"># Run the two models</span>
+
+clinton_model &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="st">&quot;models/state_space_polls.stan&quot;</span>, 
+                      <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">T =</span> <span class="kw">nrow</span>(Y_clinton), 
+                                  <span class="dt">polls =</span> <span class="kw">ncol</span>(Y_clinton), 
+                                  <span class="dt">Y =</span> Y_clinton, 
+                                  <span class="dt">sigma =</span> sigma,
+                                  <span class="dt">initial_prior =</span> <span class="dv">50</span>), <span class="dt">iter =</span> <span class="dv">600</span>)
+
+
+trump_model &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="st">&quot;models/state_space_polls.stan&quot;</span>, 
+                    <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">T =</span> <span class="kw">nrow</span>(Y_trump), 
+                                <span class="dt">polls =</span> <span class="kw">ncol</span>(Y_trump), 
+                                <span class="dt">Y =</span> Y_trump, 
+                                <span class="dt">sigma =</span> sigma,
+                                <span class="dt">initial_prior =</span> <span class="dv">30</span>), <span class="dt">iter =</span> <span class="dv">600</span>)
+
+
+
+<span class="co"># Pull the state vectors</span>
+
+mu_clinton &lt;-<span class="st"> </span><span class="kw">extract</span>(clinton_model, <span class="dt">pars =</span> <span class="st">&quot;mu&quot;</span>, <span class="dt">permuted =</span> T)[[<span class="dv">1</span>]] %&gt;%<span class="st"> </span>
+<span class="st">  </span>as.data.frame
+
+mu_trump &lt;-<span class="st"> </span><span class="kw">extract</span>(trump_model, <span class="dt">pars =</span> <span class="st">&quot;mu&quot;</span>, <span class="dt">permuted =</span> T)[[<span class="dv">1</span>]] %&gt;%<span class="st"> </span>
+<span class="st">  </span>as.data.frame
+
+<span class="co"># Rename to get dates</span>
+<span class="kw">names</span>(mu_clinton) &lt;-<span class="st"> </span><span class="kw">unique</span>(<span class="kw">paste0</span>(polls3$end_date))
+<span class="kw">names</span>(mu_trump) &lt;-<span class="st"> </span><span class="kw">unique</span>(<span class="kw">paste0</span>(polls3$end_date))
+
+
+<span class="co"># summarise uncertainty for each date</span>
+
+mu_ts_clinton &lt;-<span class="st"> </span>mu_clinton %&gt;%<span class="st"> </span>melt %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> <span class="kw">as.Date</span>(variable)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(date) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">median =</span> <span class="kw">median</span>(value),
+            <span class="dt">lower =</span> <span class="kw">quantile</span>(value, <span class="fl">0.025</span>),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(value, <span class="fl">0.975</span>),
+            <span class="dt">candidate =</span> <span class="st">&quot;Clinton&quot;</span>)
+
+mu_ts_trump &lt;-<span class="st"> </span>mu_trump %&gt;%<span class="st"> </span>melt %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> <span class="kw">as.Date</span>(variable)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(date) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">median =</span> <span class="kw">median</span>(value),
+            <span class="dt">lower =</span> <span class="kw">quantile</span>(value, <span class="fl">0.025</span>),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(value, <span class="fl">0.975</span>),
+            <span class="dt">candidate =</span> <span class="st">&quot;Trump&quot;</span>)
+
+<span class="co"># Plot results</span>
+
+
+<span class="kw">bind_rows</span>(mu_ts_clinton, mu_ts_trump) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> date)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> lower, <span class="dt">ymax =</span> upper, <span class="dt">fill =</span> candidate),<span class="dt">alpha =</span> <span class="fl">0.1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> median, <span class="dt">colour =</span> candidate)) +
+<span class="st">  </span><span class="kw">ylim</span>(<span class="dv">30</span>, <span class="dv">60</span>) +
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;red&quot;</span>), <span class="st">&quot;Candidate&quot;</span>) +
+<span class="st">  </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;red&quot;</span>), <span class="dt">guide =</span> F) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> polls3, <span class="kw">aes</span>(<span class="dt">x =</span> end_date, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Clinton</span><span class="st">`</span>), <span class="dt">size =</span> <span class="fl">0.2</span>, <span class="dt">colour =</span> <span class="st">&quot;blue&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> polls3, <span class="kw">aes</span>(<span class="dt">x =</span> end_date, <span class="dt">y =</span> Trump), <span class="dt">size =</span> <span class="fl">0.2</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_lendable</span>() +<span class="st"> </span><span class="co"># Thanks to my employer for their awesome theme!</span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Date&quot;</span>) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Implied vote share&quot;</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Poll aggregation with state-space smoothing&quot;</span>, 
+          <span class="dt">subtitle=</span> <span class="kw">paste</span>(<span class="st">&quot;Prior of 50% initial for Clinton, 30% for Trump on&quot;</span>, <span class="kw">min</span>(polls3$end_date)))</code></pre></div>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="hierarchical.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": ["Shortcourse.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

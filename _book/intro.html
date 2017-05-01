@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>A brief introduction to econometrics in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics.">
+  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+
+  <meta property="og:title" content="A brief introduction to econometrics in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  <meta name="github-repo" content="khakieconomist/BSEcon" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="A brief introduction to econometrics in Stan" />
+  
+  <meta name="twitter:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  
+
+<meta name="author" content="James Savage">
+
+
+<meta name="date" content="2017-04-30">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="index.html">
+<link rel="next" href="hierarchical.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-structure"><i class="fa fa-check"></i>The structure</a><ul>
+<li class="chapter" data-level="0.0.1" data-path="index.html"><a href="index.html#a-note-on-data"><i class="fa fa-check"></i><b>0.0.1</b> A note on data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#modern-statistical-workflow"><i class="fa fa-check"></i><b>1.1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1.1" data-path="intro.html"><a href="intro.html#example-a-model-of-wages"><i class="fa fa-check"></i><b>1.1.1</b> Example: A model of wages</a></li>
+<li class="chapter" data-level="1.1.2" data-path="intro.html"><a href="intro.html#step-1-writing-out-the-probability-model"><i class="fa fa-check"></i><b>1.1.2</b> Step 1: Writing out the probability model</a></li>
+<li class="chapter" data-level="1.1.3" data-path="intro.html"><a href="intro.html#step-2-simulating-the-model-with-known-parameters"><i class="fa fa-check"></i><b>1.1.3</b> Step 2: Simulating the model with known parameters</a></li>
+<li class="chapter" data-level="1.1.4" data-path="intro.html"><a href="intro.html#writing-out-the-stan-model-to-recover-known-parameters"><i class="fa fa-check"></i><b>1.1.4</b> Writing out the Stan model to recover known parameters</a></li>
+<li class="chapter" data-level="1.1.5" data-path="intro.html"><a href="intro.html#model-inspection"><i class="fa fa-check"></i><b>1.1.5</b> Model inspection</a></li>
+<li class="chapter" data-level="1.1.6" data-path="intro.html"><a href="intro.html#model-comparison"><i class="fa fa-check"></i><b>1.1.6</b> Model comparison</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="intro.html"><a href="intro.html#tools-of-the-trade-borrowing-from-software-engineering"><i class="fa fa-check"></i><b>1.2</b> Tools of the trade: borrowing from software engineering</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="hierarchical.html"><a href="hierarchical.html"><i class="fa fa-check"></i><b>2</b> An introduction to hierarchical modeling</a><ul>
+<li class="chapter" data-level="2.0.1" data-path="hierarchical.html"><a href="hierarchical.html#what-is-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.1</b> What is hierarchical modeling</a></li>
+<li class="chapter" data-level="2.0.2" data-path="hierarchical.html"><a href="hierarchical.html#why-do-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.2</b> Why do hierarchical modeling?</a></li>
+<li class="chapter" data-level="2.0.3" data-path="hierarchical.html"><a href="hierarchical.html#exchangeability"><i class="fa fa-check"></i><b>2.0.3</b> Exchangeability</a></li>
+<li class="chapter" data-level="2.0.4" data-path="hierarchical.html"><a href="hierarchical.html#conditional-exchangeability-and-the-bafumi-gelman-correction"><i class="fa fa-check"></i><b>2.0.4</b> Conditional exchangeability and the Bafumi Gelman correction</a></li>
+<li class="chapter" data-level="2.0.5" data-path="hierarchical.html"><a href="hierarchical.html#exercise-1-hierarchical-priors"><i class="fa fa-check"></i><b>2.0.5</b> Exercise 1: Hierarchical priors</a></li>
+<li class="chapter" data-level="2.0.6" data-path="hierarchical.html"><a href="hierarchical.html#a-very-basic-underlying-model"><i class="fa fa-check"></i><b>2.0.6</b> A very basic underlying model</a></li>
+<li class="chapter" data-level="2.0.7" data-path="hierarchical.html"><a href="hierarchical.html#the-hierarchical-prior"><i class="fa fa-check"></i><b>2.0.7</b> The hierarchical prior</a></li>
+<li class="chapter" data-level="2.0.8" data-path="hierarchical.html"><a href="hierarchical.html#a-note-on-reparameterizing"><i class="fa fa-check"></i><b>2.0.8</b> A note on reparameterizing</a></li>
+<li class="chapter" data-level="2.0.9" data-path="hierarchical.html"><a href="hierarchical.html#exercise-2-panel-data"><i class="fa fa-check"></i><b>2.0.9</b> Exercise 2: Panel data</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="funtimeseries.html"><a href="funtimeseries.html"><i class="fa fa-check"></i><b>3</b> Some fun time series models</a><ul>
+<li class="chapter" data-level="3.1" data-path="funtimeseries.html"><a href="funtimeseries.html#this-session"><i class="fa fa-check"></i><b>3.1</b> This session</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="funtimeseries.html"><a href="funtimeseries.html#finite-mixtures"><i class="fa fa-check"></i><b>3.1.1</b> Finite mixtures</a></li>
+<li class="chapter" data-level="3.1.2" data-path="funtimeseries.html"><a href="funtimeseries.html#writing-out-the-model"><i class="fa fa-check"></i><b>3.1.2</b> Writing out the model</a></li>
+<li class="chapter" data-level="3.1.3" data-path="funtimeseries.html"><a href="funtimeseries.html#recapturing-known-unknowns"><i class="fa fa-check"></i><b>3.1.3</b> Recapturing ‘known unknowns’</a></li>
+<li class="chapter" data-level="3.1.4" data-path="funtimeseries.html"><a href="funtimeseries.html#taking-the-model-to-real-data"><i class="fa fa-check"></i><b>3.1.4</b> Taking the model to real data</a></li>
+<li class="chapter" data-level="3.1.5" data-path="funtimeseries.html"><a href="funtimeseries.html#building-up-the-model"><i class="fa fa-check"></i><b>3.1.5</b> Building up the model</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model-involving-polls"><i class="fa fa-check"></i><b>3.2</b> A state space model involving polls</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="funtimeseries.html"><a href="funtimeseries.html#multi-measurement-model-and-the-8-schools-example"><i class="fa fa-check"></i><b>3.2.1</b> Multi-measurement model and the 8 schools example</a></li>
+<li class="chapter" data-level="3.2.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model"><i class="fa fa-check"></i><b>3.2.2</b> A state-space model</a></li>
+<li class="chapter" data-level="3.2.3" data-path="funtimeseries.html"><a href="funtimeseries.html#putting-it-together"><i class="fa fa-check"></i><b>3.2.3</b> Putting it together</a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">A brief introduction to econometrics in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="intro" class="section level1">
+<h1><span class="header-section-number">Chapter 1</span> Modern Statistical Workflow</h1>
+<p>This session introduces the process I recommend for model building, which I call “Modern Statistical Workflow”.</p>
+<div id="modern-statistical-workflow" class="section level2">
+<h2><span class="header-section-number">1.1</span> Modern Statistical Workflow</h2>
+<p>The workflow described here is a template for all the models that will be discussed during the course. If you work by it, you will learn models more thoroughly, spot errors more swiftly, and build a much better understanding of economics and statistics than you would under a less rigorous workflow.</p>
+<p>The workflow is iterative. Typically we start with the simplest possible model, working through each step in the process. Only once we have done each step do we add richness to the model. Building models up like this in an iterative way will mean that you always have a working version of a model to fall back on. The process is:</p>
+<ol style="list-style-type: decimal">
+<li>Write out a full probability model. This involves specifying the joint distribution for your parameters/latent variables and the conditional distribution for the outcome data.</li>
+<li>Simulate some data from the model with assumed values for the parameters (these might be quite different from the “true” parameter values).</li>
+<li>Estimate the model using the simulated data. Check that your model can recover the known parameters used to simulate the data.</li>
+<li>Estimate the model parameters conditioned on real data.</li>
+<li>Check that the estimation has run properly.</li>
+<li>Run posterior predictive checking/time series cross validation to evaluate model fit.</li>
+<li>Perform predictive inference.</li>
+</ol>
+<p>Iterate the entire process to improve the model! Compare models—which model are the observed outcomes more plausibly drawn from?</p>
+<div id="example-a-model-of-wages" class="section level3">
+<h3><span class="header-section-number">1.1.1</span> Example: A model of wages</h3>
+<p>Before building any model, it is always worth writing down the questions that we might want to ask. Sometimes, the questions will be relativey simple, like “what is the difference in average wages between men and women?” Yet for most large-scale modeling tasks we want to build models capable of answering many questions. In the case of wages, they may be questions like:</p>
+<ul>
+<li>If I know someone is male and lives in the South what should I expect their wages to be, holding other personal characteristics constant?</li>
+<li>How much does education affect wages?</li>
+<li>Workers with more work experience tend to earn higher wages. How does this effect vary across demographic groups?</li>
+<li>Does variance in wages differ across demographic groups?</li>
+</ul>
+<p>As a good rule of thumb, the more questions you want a model to be able to answer, the more complex the model will have to be. The first question above might be answered with a simple linear regression model, the second, a more elaborate model that allows the relationship between experience and wages to vary across demographic groups; the final question might involve modeling the variance of the wage distribution, not just its mean.</p>
+<p>The example given below introduces a simple linear model of wages given demographic characteristics, with the intent of introducing instrumental variables—the first trick up our sleeve for the day. We’ll introduce two competing instrumental variables models: the first assuming independence between the first and second stage regressions and the second modeling them jointly.</p>
+<p>Let’s walk through each step of the workflow, gradually introducing Stan along the way. While we’re not going to estimate the model on real data, we want to make sure that the model we build is sane. As such we’ll look at the characteristics of wages for some real data. This data comes from some wage and demographics data from the 1988 Current Population Survey, which comes in R’s <code>AER</code> package. This dataset contains the weekly wage for around 28,000 working men in 1988; prices are in 1992 dollars. You can load the dataset into your R workspace like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(AER)</code></pre></div>
+<pre><code>## Loading required package: car</code></pre>
+<pre><code>## Loading required package: lmtest</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre><code>## Loading required package: sandwich</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;CPS1988&quot;</span>)</code></pre></div>
+</div>
+<div id="step-1-writing-out-the-probability-model" class="section level3">
+<h3><span class="header-section-number">1.1.2</span> Step 1: Writing out the probability model</h3>
+<p>The first step of of our workflow is to propose an underlying generative model. It’s helpful to think of a generative model as being a structured random number generator, which when simulated, generates outcomes with a distribution that looks like the distribution of the outcome variable. Once we have decided on the generative model, we then get into the specifics of endogeneity issues etc. In deciding the choice of distribution to use, you should plot a histogram or density of the outcome. For example, we could generate a histogram of wages like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">ggplot</span>(CPS1988, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(wage))) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +<span class="st"> </span>
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>(<span class="dt">base_size =</span> <span class="dv">12</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Histogram of log of wages&quot;</span>)</code></pre></div>
+<p><img src="BSEcon_files/figure-html/unnamed-chunk-3-1.png" width="288" /></p>
+<p>As we can see, the distribution of wages is quite skewed, and so we might need to choose a distribution capable of generating highly skewed outcomes. Another approach is to transform the data. In this case, because all wages are positive, we could take their natural log. The distribution of log wages appears to be far more normal than the initial distribution, and it possible that the non-normality is explainable using demographic characteristics.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(CPS1988, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(wage))) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +<span class="st"> </span>
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>(<span class="dt">base_size =</span> <span class="dv">12</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Histogram of log of wages&quot;</span>)</code></pre></div>
+<p><img src="BSEcon_files/figure-html/unnamed-chunk-4-1.png" width="288" /></p>
+<p>If we decide to choose a normal density as the data-generating process, and assume that the conditional distribution of one person’s wage does not depend on the conditional distribution of another person’s, we can write it out like so:</p>
+<p><span class="math display">\[
+\log(\mbox{wage})_{i} \sim \mbox{Normal}(\mu_{i}, \sigma_{i})
+\]</span></p>
+<p>which says that a person <span class="math inline">\(i\)</span>’s wage is distributed according to a normal distribution with <em>location</em> <span class="math inline">\(\mu_{i}\)</span> and <em>scale</em> <span class="math inline">\(\sigma_{i}\)</span>. In the case of a normal density, the location is the mean, and the scale is the standard deviation. We prefer to use “location” and “scale” rather than “mean” and “standard deviation” because the terminology can carry across to other densities whose location and scale parameters don’t correspond to the mean or standard deviation.</p>
+<p>Let’s be clear about what this means. This generative model says that each individual’s (log) wage is not completely determined—it involves some amount of luck. So while on average it will be <span class="math inline">\(\mu_{i}\)</span>, luck will result in differences from this average, and these differences have a standard deviation of <span class="math inline">\(\sigma_{i}\)</span>.</p>
+<p>Notice that both parameters <span class="math inline">\(\mu_{i}\)</span> and <span class="math inline">\(\sigma_{i}\)</span> vary across each individual. One of the main challenges of building a good model is to come up with functional forms for <span class="math inline">\(\mu_{i}\)</span> and <span class="math inline">\(\sigma_{i}\)</span>, taking into account the information available to us. For instance, the (normal) linear regression model uses a (row) vector of individual characteristics <span class="math inline">\(X_{i} = (\mbox{education}_{i},\mbox{experience}_{i}, \dots)\)</span>, along with a set of parameters that are common to all individuals (an intercept <span class="math inline">\(\alpha\)</span>, coefficients <span class="math inline">\(\beta\)</span> and a scale parameter <span class="math inline">\(\sigma\)</span>). The generative model is then:</p>
+<p><span class="math display">\[
+\log(\mbox{wage})_{i} \sim \mbox{Normal}(\alpha + X_{i}\beta, \sigma)
+\]</span> which is the same as saying:</p>
+<p><span class="math display">\[
+\log(\mbox{wage})_{i} = \alpha + X_{i}\beta + \epsilon_{i} \mbox{ with } \epsilon_{i} \sim \mbox{N}(0, \sigma)
+\]</span></p>
+<p>Note that we’ve made “modeling assumptions” <span class="math inline">\(\mu_{i} = \alpha + X_{i}\beta\)</span> and <span class="math inline">\(\sigma_{i} = \sigma\)</span>. The parameters of the generative model are both “true” and unknown. The entire point is to peform inference in order to get probabilistic estimates of the “true” parameters.</p>
+<div id="choosing-the-right-generative-model" class="section level4">
+<h4><span class="header-section-number">1.1.2.1</span> Choosing the right generative model</h4>
+<p>Above, we picked out a normal density for log wages (which corresponds to a lognormal density for wages) as a reasonable first step in modeling our wage series. How did we get to this choice? The choice of distribution to use should depend on the nature of your outcome variables. Two good rules of thumb are:</p>
+<ol style="list-style-type: decimal">
+<li>The chosen distribution should not give positive probability to impossible outcomes. For example, wages can’t be negative, and so if we were to use a normal density (which gives positive probability to all outcomes) to model wages, we would be committing an error. If an outcome is outcome is binary or count data, the model should not give weight to non-integer outcomes. And so on.</li>
+<li>The chosen distribution should give positive weight to plausible outcomes.</li>
+</ol>
+</div>
+<div id="choosing-priors" class="section level4">
+<h4><span class="header-section-number">1.1.2.2</span> Choosing priors</h4>
+<p>To complete our probability model, we need to specify priors for the parameters <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\sigma\)</span>. Again, these priors should place positive probabilistic weight over values of the parameters that we consider possible, and zero weight on impossible values (like a negative scale <span class="math inline">\(\sigma\)</span>). In this case, it is common to assume normal priors for regression coefficients and half-Cauchy or half-Student-t priors on scales.</p>
+<p>A great discussion of choosing priors is available <a href="github.com/stan-dev/wiki">here</a>.</p>
+</div>
+<div id="thinking-ahead-are-our-data-endogenous-instrumental-variables" class="section level4">
+<h4><span class="header-section-number">1.1.2.3</span> Thinking ahead: are our data endogenous? Instrumental variables</h4>
+<p>As you will see in the generative model above, <span class="math inline">\(\epsilon\)</span> are as though they’ve been drawn from a (normal) random number generator, and have no systematic relationship to the variables in X. Now what is the economic meaning of <span class="math inline">\(\epsilon\)</span>? The way I prefer to think about it is as a catch-all containing the unobserved information that is relevant to the outcome.</p>
+<p>We need to think ahead: is there unobserved information that will be systematically correlated with <span class="math inline">\(X\)</span>? Can we tell a story that there are things that cause both some change in one of our <span class="math inline">\(X\)</span> variables and also our observed wages? If such information exists, then at the model estimation stage we will have an unobserved confounder problem, and we need to consider it in our probability model. A common way of achiving this is to use instrumental variables.</p>
+<p>An instrumental variable is one that introduces plausible exogenous variation into our endogenous regressor. For example, if we have years of education on the right hand side, we might be concerned that the same sorts of unobserved factors—family and peer pressure, IQ etc.—that lead to high levels of education might also lead to high wages (even in absense of high levels of education). In this case we would want to “instrument” education, ideally with an experimental treatment that randomly assigned some people to higher rates of education and others to less. In reality, such an experiment might not be possible to run, but we might find “natural experiments” that result in the same variation. The most famous case of such an instrument is the Vietnam war draft (Angrist and Kreuger, 1992).</p>
+<p>There are a few ways of incorporating instrumental variables. The first is so-called “two stage least squares” in which we first regress the endogenous regressor on the exogenous regressors (<span class="math inline">\(X_{edu,i}\)</span>) plus an instrument or instruments <span class="math inline">\(Z_{i}\)</span>. In the second stage we replace the actual values of education with the fitted values from the first stage.</p>
+<p>Stage one:</p>
+<p><span class="math display">\[
+\mbox{education}_{i} \sim \mbox{Normal}(\alpha_{s1} + X_{-edu,i}\gamma + Z_{i}\delta, \sigma_{s1})
+\]</span> Stage two:</p>
+<p><span class="math display">\[
+\log(wage_{i})  \sim \mbox{Normal}(\alpha_{s2} + X_{-edu,i}\beta + (\alpha_{s1} + X_{-edu,i}\gamma + Z_{i}\delta)\tau, \sigma_{s2})
+\]</span> (In the second stage, we only estimate <span class="math inline">\(\alpha_{s2}, \beta, \tau\)</span> and <span class="math inline">\(\sigma_{s2}\)</span>; the other parameters’ values are from the first stage).</p>
+<p>If we treat the uncertainty of the first model approproately in the second (as is automatic in Bayes), then two stage least squares yields an consistent estimate of the treatment effect <span class="math inline">\(\tau\)</span> (that is, as the number of observations grows, we get less bias). But it may be inefficient in the case when the residuals of the data generating processes in stage one and stage two are correlated.</p>
+<p>The second method of implementing instrumental variables is as a simultaneous equations model. Under this framework, the generative model is</p>
+<p><span class="math display">\[
+(\log(wage_{i}), \mbox{edu}_{i})&#39; \sim \mbox{Multi normal}\left((\mu_{1,i}, \mu_{2, i})&#39;, \Sigma\right)
+\]</span> where</p>
+<p><span class="math display">\[
+\mu_{1,i} = \alpha_{s2} + X_{-edu,i}\beta + (\alpha_{s1} + X_{-edu,i}\gamma + Z_{i}\delta)\tau
+\]</span> and <span class="math display">\[
+\mu_{2,i} = \alpha_{s1} + X_{-edu,i}\gamma + Z_{i}\delta
+\]</span> You will see: this is the same as the two stage least squares model above, exept we have allowed the errors to be correlated across equations (this information is in the covariance matrix <span class="math inline">\(\Sigma\)</span>). Nobody really understands raw numbers from Covariance matrices, so we typically decompose covariance into the more interpretable<br />
+scale vector <span class="math inline">\(\sigma\)</span> and correlation matrix <span class="math inline">\(\Omega\)</span> such that <span class="math inline">\(\Sigma = \mbox{diag}(\sigma)\Omega \mbox{diag}(\sigma)\)</span>. This decomposition also allows us to use more interpretable priors.</p>
+<p>We now have two possible models. What we’ll do below is simulate data from the second model with known parmaters. Then we’ll code up both models and estimate each, allowing us to perform model comparison.</p>
+</div>
+</div>
+<div id="step-2-simulating-the-model-with-known-parameters" class="section level3">
+<h3><span class="header-section-number">1.1.3</span> Step 2: Simulating the model with known parameters</h3>
+<p>We have now specified two probability models. What we will do next is simulate some data from the second (more complex model), and then check to see if we can recover the (known) model parameters by estimating both the correctly specified and incorrectly specified models above. Simulating and recovering known parameters is an important checking procedure in model building; it often helps catch errors in the model and clarifies the model in the mind of the modeler.</p>
+<p>Now that we have written out the data generating model, let’s generate some known parameters and covariates and simulate the model. First: generate some values for the data and paramaters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate a matrix of random numbers, and values for beta, nu and sigma</span>
+
+<span class="kw">set.seed</span>(<span class="dv">48</span>) <span class="co"># Set the random number generator seed so that we get the same parameters</span>
+N &lt;-<span class="st"> </span><span class="dv">500</span> <span class="co"># Number of observations</span>
+P &lt;-<span class="st"> </span><span class="dv">5</span> <span class="co"># Number of covariates</span>
+X &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(N*P), N, P) <span class="co"># generate an N*P covariate matrix of random data</span>
+Z &lt;-<span class="st"> </span><span class="kw">rnorm</span>(N) <span class="co"># an instrument</span>
+
+<span class="co"># The parameters governing the residuals</span>
+sigma &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)
+Omega &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">2</span>, <span class="dv">2</span>)
+
+<span class="co"># Generate some residuals</span>
+resid &lt;-<span class="st"> </span>MASS::<span class="kw">mvrnorm</span>(N, <span class="dt">mu =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">Sigma =</span> <span class="kw">diag</span>(sigma)%*%<span class="st"> </span>Omega %*%<span class="st"> </span><span class="kw">diag</span>(sigma))
+
+<span class="co"># Now the parameters of our model</span>
+beta &lt;-<span class="st"> </span><span class="kw">rnorm</span>(P)
+tau &lt;-<span class="st"> </span><span class="dv">1</span> <span class="co"># This is the treatment effect we&#39;re looking to recover</span>
+alpha_1 &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>)
+alpha_2 &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>)
+gamma &lt;-<span class="st"> </span><span class="kw">rnorm</span>(P)
+delta &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>)
+
+mu_2 &lt;-<span class="st"> </span>alpha_1 +<span class="st"> </span>X%*%gamma +<span class="st"> </span>Z*delta
+mu_1 &lt;-<span class="st"> </span>alpha_2 +<span class="st"> </span>X%*%beta +<span class="st"> </span>mu_2*tau
+
+Y &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(mu_1 +<span class="st"> </span>resid[,<span class="dv">1</span>])
+endog_regressor &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(mu_2 +<span class="st"> </span>resid[,<span class="dv">2</span>])
+
+<span class="co"># And let&#39;s check we can&#39;t recapture with simple OLS: </span>
+
+<span class="kw">lm</span>(Y ~<span class="st"> </span>. +<span class="st"> </span>endog_regressor, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(X))</code></pre></div>
+</div>
+<div id="writing-out-the-stan-model-to-recover-known-parameters" class="section level3">
+<h3><span class="header-section-number">1.1.4</span> Writing out the Stan model to recover known parameters</h3>
+<p>A Stan model is comprised of code blocks. Each block is a place for a certain task. The bold blocks below must be present in all Stan programs (even if they contain no arguments):</p>
+<ol style="list-style-type: decimal">
+<li><code>functions</code>, where we define functions to be used in the blocks below. This is where we will write out a random number generator that gives us draws from our assumed model.</li>
+<li><code>data</code>, declares the data to be used for the model</li>
+<li><code>transformed data</code>, makes transformations of the data passed in above</li>
+<li><code>parameters</code>, defines the unknowns to be estimated, including any restrictions on their values. <!-- jgabry: Is "defines" right for the parameters block? Or would "declares" be more precise? --></li>
+<li><code>transformed parameters</code>, often it is preferable to work with transformations of the parameters and data declared above; in this case we define them here.</li>
+<li><code>model</code>, where the full probability model is defined.</li>
+<li><code>generated quantities</code>, generates a range of outputs from the model (posterior predictions, forecasts, values of loss functions, etc.).</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R:</span>
+<span class="co"># Load necessary libraries and set up multi-core processing for Stan</span>
+<span class="kw">options</span>(<span class="dt">warn=</span>-<span class="dv">1</span>, <span class="dt">message =</span>-<span class="dv">1</span>)
+<span class="kw">library</span>(dplyr); <span class="kw">library</span>(ggplot2); <span class="kw">library</span>(rstan); <span class="kw">library</span>(reshape2)
+<span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel::<span class="kw">detectCores</span>())</code></pre></div>
+<p>Now we have <span class="math inline">\(y\)</span> and <span class="math inline">\(X\)</span>, and we want to estimate <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\sigma\)</span> and, depending on the model, <span class="math inline">\(\nu\)</span>. We have two candidate probability models that we want to estimate and check which one is a more plausible model of the data. To do this, we need to specify both models in Stan and then estimate them.</p>
+<p>Let’s jump straight in and define the incorrectly specified model. It is incorrect in that we haven’t properly accounted for the mutual information in first and second stage regressions.</p>
+<pre><code>// saved as models/independent_iv.stan
+// saved as models/independent_iv.stan
+data {
+  int N; // number of observations
+  int P; // number of covariates
+  matrix[N, P] X; //covariate matrix
+  vector[N] Y; //outcome vector
+  vector[N] endog_regressor; // the endogenous regressor
+  vector[N] Z; // the instrument (which we&#39;ll assume is a vector)
+}
+parameters {
+  vector[P] beta; // the regression coefficients
+  vector[P] gamma;
+  real tau;
+  real delta;
+  real alpha_1;
+  real alpha_2;
+  vector&lt;lower = 0&gt;[2] sigma; // the residual standard deviation
+  corr_matrix[2] Omega;
+}
+transformed parameters {
+  matrix[N, 2] mu;
+  
+  for(i in 1:N) {
+    mu[i,2] = alpha_1 + X[i]*gamma + Z[i]*delta;
+    mu[i,1] = alpha_2 + X[i]*beta + mu[i,2]*tau;
+  }
+}
+model {
+  // Define the priors
+  beta ~ normal(0, 1); 
+  gamma ~ normal(0, 1);
+  tau ~ normal(0, 1);
+  sigma ~ cauchy(0, 1);
+  delta ~ normal(0, 1);
+  alpha_1 ~ normal(0, 1);
+  alpha_2 ~ normal(0, 2);
+  Omega ~ lkj_corr(5);
+  
+  // The likelihood
+  for(i in 1:N) {
+    Y[i]~ normal(mu[i], sigma[1]);
+    endog_regressor[i]~ normal(mu[2], sigma[2]);
+  }
+
+  
+}
+generated quantities {
+  // For model comparison, we&#39;ll want to keep the likelihood
+  // contribution of each point
+
+  vector[N] log_lik;
+  for(i in 1:N) {
+    log_lik[i] = normal_lpdf(Y[i] | alpha_1  + X[i,] * beta + endog_regressor[i]*tau, sigma[1]);
+  }
+}
+</code></pre>
+<p>Now we define the correctly specified model. It is the same as above, but with a couple of changes:</p>
+<pre><code>// saved as models/joint_iv.stan
+// saved as models/joint_iv.stan
+data {
+  int N; // number of observations
+  int P; // number of covariates
+  matrix[N, P] X; //covariate matrix
+  vector[N] Y; //outcome vector
+  vector[N] endog_regressor; // the endogenous regressor
+  vector[N] Z; // the instrument (which we&#39;ll assume is a vector)
+}
+parameters {
+  vector[P] beta; // the regression coefficients
+  vector[P] gamma;
+  real tau;
+  real delta;
+  real alpha_1;
+  real alpha_2;
+  vector&lt;lower = 0&gt;[2] sigma; // the residual standard deviation
+  corr_matrix[2] Omega;
+}
+transformed parameters {
+  matrix[N, 2] mu;
+  
+  for(i in 1:N) {
+    mu[i,2] = alpha_1 + X[i]*gamma + Z[i]*delta;
+    mu[i,1] = alpha_2 + X[i]*beta + mu[i,2]*tau;
+  }
+}
+model {
+  // Define the priors
+  beta ~ normal(0, 1); 
+  gamma ~ normal(0, 1);
+  tau ~ normal(0, 1);
+  sigma ~ cauchy(0, 1);
+  delta ~ normal(0, 1);
+  alpha_1 ~ normal(0, 1);
+  alpha_2 ~ normal(0, 2);
+  Omega ~ lkj_corr(5);
+  
+  // The likelihood
+  {
+    matrix[N, 2] Y2;
+    Y2 = append_col(Y, endog_regressor);
+    for(i in 1:N) {
+      Y2[i]~ multi_normal(mu[i], diag_matrix(sigma)*Omega*diag_matrix(sigma));
+    }
+  }
+  
+}
+generated quantities {
+  // For model comparison, we&#39;ll want to keep the likelihood
+  // contribution of each point
+
+  vector[N] log_lik;
+  for(i in 1:N) {
+    log_lik[i] = normal_lpdf(Y[i] | alpha_1  + X[i,] * beta + endog_regressor[i]*tau, sigma[1]);
+  }
+}
+</code></pre>
+<p>Now that we have specified two models, let’s estimate them with the <span class="math inline">\(y\)</span> and <span class="math inline">\(X\)</span> we generated above.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R</span>
+
+compiled_model &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="st">&quot;&quot;</span>)
+
+incorrect_fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">file =</span> <span class="st">&quot;models/independent_iv.stan&quot;</span>,
+                      <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">Y =</span> Y,
+                                  <span class="dt">X =</span> X,
+                                  <span class="dt">endog_regressor =</span> endog_regressor,
+                                  <span class="dt">P =</span> P, 
+                                  <span class="dt">N =</span> N,
+                                  <span class="dt">Z =</span> Z), 
+                      <span class="dt">iter =</span> <span class="dv">600</span>)
+
+correct_fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code =</span> <span class="st">&quot;models/joint_iv.stan&quot;</span>,
+                    <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">Y =</span> Y,
+                                <span class="dt">X =</span> X,
+                                <span class="dt">endog_regressor =</span> endog_regressor,
+                                <span class="dt">P =</span> P, 
+                                <span class="dt">N =</span> N,
+                                <span class="dt">Z =</span> Z),
+                    <span class="dt">iter =</span> <span class="dv">600</span>)</code></pre></div>
+<p>We have now fit our two competing models to the data. What has been estimated?</p>
+<div id="what-do-these-fitted-objects-contain" class="section level4">
+<h4><span class="header-section-number">1.1.4.1</span> What do these fitted objects contain?</h4>
+<p>If you are accustomed to estimating models using ordinary least squares (OLS), maximum likelihood estimates (MLE), or the general method of moments (GMM), then you may expect point estimates for parameters: regression tables contain an estimate of the parameter along with some standard errors. Full Bayesian inference involves averaging over the uncertainty in parameter estimates, that is, the posterior distribution. For a point estimate, Bayesians typically use the mean of the posterior distribution, because it minimizes expected square error in the estimate; the posterior median minimizes expected absolute error.</p>
+<p>For all but a few models, posterior distributions cannot be expressed analytically. Instead, numerical techniques involving simulation going under the general heading of Monte Carlo methods, are used to estimate quantities of interest by taking draws from the distribution in question.</p>
+<p>Monte Carlo estimation is quite simple. Let’s say a parameter <span class="math inline">\(\theta\)</span> is distributed according to some distribution <span class="math inline">\(\mbox{Foo}(\theta)\)</span> for which we have no analytical formula, but from which we can simulate random draws. We want to draw statistical inferences using this distribution; we want its mean (expected value), standard deviation, median and other quantiles for posterior intervals, etc. The Monte Carlo method allows us to make these inferences by simply generating many (not necessarily independent) draws from the distribution and then calculating the statistic of interest from those draws. Because these draws are from the distribution of interest, they will tend to come from the higher probability regions of the distribution. For example, if 50% of the posterior probability mass is near the posterior mode, then 50% of the simulated draws (give or take sampling error) should be near the posterior mode.</p>
+<p>For example, suppose we want to estimate the expectation of <span class="math inline">\(\mbox{Foo}(\theta)\)</span>, or in other words, the mean of a variable <span class="math inline">\(\theta\)</span> with distribution <span class="math inline">\(\mbox{Foo}(\theta)\)</span>. If we take <span class="math inline">\(M\)</span> random draws from <span class="math inline">\(\mbox{Foo}\)</span>, <span class="math display">\[
+\theta^{(1)}, \ldots, \theta^{(M)} \sim \mbox{Foo}(),
+\]</span> then we can estimate the expected value of <span class="math inline">\(\theta\)</span> (i.e., its posterior mean) as <span class="math display">\[
+\mathbb{E}[\theta]
+\approx
+\frac{1}{M} \sum_{m=1}^{M} \theta^{(m)}.
+\]</span></p>
+<p>If the draws <span class="math inline">\(\theta^{(m)}\)</span> are independent, the result is a sequence of independent and identically distributed (i.i.d.) draws. The mean of a sequence of i.i.d. draws is governed by the central limit theorem, where the standard error on the estimates is given by the standard deviation divided by the square root of the number of draws. Thus standard error decreases as <span class="math inline">\(\mathcal{O}(\frac{1}{\sqrt{M}})\)</span> in the number of independent draws <span class="math inline">\(M\)</span>.</p>
+<p>What makes Bayesian inference not only possible, but practical, is that almost all of the Bayesian inference for event probabilities, predictions, and parameter estimates can be expressed as expectations and carried out using Monte Carlo methods.</p>
+<p>There is one hitch, though. For almost any practically useful model, not only will we not be able to get an analytical formula for the posterior, we will not be able to take independent draws. Fortunately, all is not lost, as we will be able to take identically distributed draws using a technique known as Markov chain Monte Carlo (MCMC). With MCMC, the draws from a Markov chain in which each draw <span class="math inline">\(\theta^{(m+1)}\)</span> depends (only) on the previous draw <span class="math inline">\(\theta^{(m)}\)</span>. Such draws are governed by the MCMC central limit theorem, wherein a quantity known as the effective sample size plays the role of the effective sample size in pure Monte Carlo estimation. The effective sample size is determined by how autocorrelated the draws are; if each draw is highly correlated with previous draws, then more draws are required to achieve the same effective sample size.</p>
+<p>Stan is able to calculate the effective sample size for its MCMC methods and use that to estimate standard errors for all of its predictive quantities, such as parameter and event probability estimates.</p>
+<p>A fitted Stan object contains a sequence of <span class="math inline">\(M\)</span> draws, where each draw contains a value for every parameter (and generated quantity) in the model. If the computation has converged, as measured by built-in convergence diagnostics, the draws are from the posterior distribution of our parameters conditioned on the observed data. These are draws from the joint posterior distribution; correlation between parameters is likely to be present in the joint posterior even if it was not present in the priors.</p>
+<p>In the generated quantities block of the two models above, we declare variables for two additional quantities of interest.</p>
+<ul>
+<li><p>The first, <code>log_lik</code>, is the log-likelihood, which we use for model comparison. We obtain this value for each parameter draw, for each value of <span class="math inline">\(y_{i}\)</span>. Thus if you have <span class="math inline">\(N\)</span> observations and <code>iter</code> parameter draws, this will contain <span class="math inline">\(N\times\)</span> <code>iter</code> log-likelihood values (which may produce a lot of output for large data sets).</p></li>
+<li><p>The second, <code>y_sim</code>, is a <em>posterior predictive quantity</em>, in this case a replicated data set consisting of a sequence of fresh outcomes generated randomly from the parameters. Rather than each observation having a “predicted value”, it has a predictive distribution that takes into account both the regression residual and uncertainty in the parameter estimates.</p></li>
+</ul>
+</div>
+</div>
+<div id="model-inspection" class="section level3">
+<h3><span class="header-section-number">1.1.5</span> Model inspection</h3>
+<p>To address questions 1 and 2 above, we need to examine the parameter draws from the model to check for a few common problems:</p>
+<ul>
+<li><strong>Lack of mixing</strong>. A poorly “mixing” Markov chain is one that moves very slowly between regions of the parameter space or barely moves at all. This can happen if the distribution of proposals is much narrower than the target (posterior) distribution or if it is much wider than the target distribution. In the former case most proposals will be accepted but the Markov chain will not explore the full parameter space whereas in the latter case most proposals will be rejected and the chain will stall. By running several Markov chains from different starting values we can see if each chain mixes well and if the chains are converging on a common distribution. If the chains don’t mix well then it’s unlikely we’re sampling from a well specified posterior. The most common reason for this error is a poorly specified model.</li>
+<li><strong>Stationarity</strong>. Markov chains should be covariance stationary, which means that the mean and variance of the chain should not depend on when you draw the observations. Non-stationarity is normally the consequence of a poorly specified model or an insufficient number of iterations.</li>
+<li><strong>Autocorrelation</strong>. Especially in poorly specified or weakly identified models, a given draw of parameters can be highly dependent on the previous draw of the parameters. One consequence of autocorrelation is that the posterior draws will contain less information than the number of draws suggests. That is, the effective posterior sample size will be much less than the actual posterior sample size. For example, 2000 draws with high autocorrelation will be less informative than 2000 independent draws. Assuming the model is specified correctly, then <em>thinning</em> (keeping only every k-th draw) is one common approach to dealing with highly autocorrelated draws. However, while thinning can reduce the autocorrelation in the draws that are retained it still sacrifices information. If possible, <a href="http://mc-stan.org/documentation/">reparameterising the model</a> is a better approach to this problem. (See section 21 of the manual, on Optimizing Stan code).</li>
+<li><strong>Divergent transitions</strong>. In models with very curved or irregular posterior densities, we often get “divergent transitions”. This typically indicates that the sampler was unable to explore certain regions of the distribution and a respecification or changes to the sampling routine may be required. The easiest way of addressing this issue is to use <code>control = list(adapt_delta = 0.99)</code> or some other number close to 1. This will lead to smaller step sizes and therefore more steps will be required to explore the posterior. Sampling will be slower but the algorithm will often be better able to explore these problematic regions, reducing the number of divergent transitions.</li>
+</ul>
+<p>All of these potential problems can be checked using the ShinyStan graphical interface, which is available in the <code>shinystan</code> <code>R</code> package. You can install it with <code>install.packages(&quot;shinystan&quot;)</code>, and run it with <code>launch_shinystan(correct_fit)</code>. It will bring up an interactive session in your web browser within which you can explore the estimated parameters, examine the individual Markov chains, and check various diagnostics. More information on ShinyStan is available <a href="http://mc-stan.org/interfaces/shinystan">here</a>. We will confront most of these issues and show how to resolve them in later chapters when we work with real examples. For now just keep in mind that MCMC samples always need to be checked before they are used for making inferences.</p>
+</div>
+<div id="model-comparison" class="section level3">
+<h3><span class="header-section-number">1.1.6</span> Model comparison</h3>
+<p>Let’s start by looking at the model outputs. The draws from each parameter can be neatly summarized with <code>print</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R:</span>
+
+<span class="kw">print</span>(incorrect_fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;beta&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;sigma&quot;</span>))
+<span class="co"># specify parameters to save; else we&#39;d get `log_lik` and `y_sim`</span>
+
+<span class="co"># Some things to note:</span>
+
+<span class="co"># - mean is the mean of the draws for each observation</span>
+<span class="co"># - se_mean is the Monte Carlo error</span>
+<span class="co">#   (standard error of the Monte Carlo estimate from the true mean)</span>
+<span class="co"># - sd is the standard deviation of the parameter&#39;s draws</span>
+<span class="co"># - the quantiles are self-explanatory</span>
+<span class="co"># - n_eff is the effective number of independent draws.</span>
+<span class="co">#   If there is serial correlation between sequential draws,</span>
+<span class="co">#   the draws cannot be considered independent.</span>
+<span class="co">#   In Stan, high serial correlation is typically a problem in</span>
+<span class="co">#   poorly specified models</span>
+<span class="co"># - Rhat: this is the Gelman Rubin convergence diagnostic.</span>
+<span class="co">#   Values close to 1 indicate that the multiple chains</span>
+<span class="co">#   that you estimated have converged to the same</span>
+<span class="co">#   distribution and are &quot;mixing&quot; well.</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R</span>
+
+<span class="kw">print</span>(correct_fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;nu&quot;</span>))</code></pre></div>
+<p>At the moment, it seems as though both our models have done about as good a job at estimating the regression coefficients <span class="math inline">\(\beta\)</span> as one another. But the incorrectly specified model severely overestimates <span class="math inline">\(\sigma\)</span>. This makes sense–a Student-t distribution with <span class="math inline">\(\nu=5\)</span> will have fat tails, and so a normal distribution will try to replicate the extreme values by having a large variance.</p>
+<p>How else might we compare the two models?</p>
+<p>One approach is to use the <code>loo</code> package to compare the models on their estimated out-of-sample predictive performance. The idea of this package is to approximate each model’s leave-one-out (LOO) cross-validation error, allowing model comparison by the LOO Information Criterion (LOOIC). LOOIC has the same purpose as the Akaike Information Criterion (AIC), which is to estimate the expected log predictive density (ELPD) for a new dataset. However, AIC ignores prior distributions and makes the assumption that the posterior is a multivariate normal distribution. The approach taken by the <code>loo</code> package does not make this distributional assumption and also integrates over (averages over) the uncertainty in the parameters.</p>
+<p>The Bayesian LOO estimate is <span class="math inline">\(\sum_{n = 1}^{N}\log p(y_{n} \, | \, y_{1}, ..., y_{n-1}, y_{n+1}, ..., y_{N})\)</span>, which requires fitting the model <span class="math inline">\(N\)</span> times, each time leaving out one of the <span class="math inline">\(N\)</span> data points. For large datasets or complex models the computational cost is usually prohibitive. The <code>loo</code> package does an approximation that avoids re-estimating the model and requires only the log-likelihood evaluated at the posterior draws of the parameters. The approximation will be good so long as the posterior distribution is not very sensitive to leaving out any single observation.</p>
+<p>A big upside of this approach is that it enables us to generate probabilistic estimates of the degree to which each model is most likely to produce the best out-of-sample predictions.</p>
+<p>We use <code>loo</code> like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># in R</span>
+<span class="co"># </span>
+<span class="co"># library(loo) # Load the library</span>
+<span class="co"># </span>
+<span class="co"># # Extract the log likelihoods of both models.</span>
+<span class="co"># # Note that we need to declare log_lik in the generated quantities block</span>
+llik_incorrect &lt;-<span class="st"> </span><span class="kw">extract_log_lik</span>(incorrect_fit, <span class="dt">parameter_name =</span> <span class="st">&quot;log_lik&quot;</span>)
+llik_correct &lt;-<span class="st"> </span><span class="kw">extract_log_lik</span>(correct_fit, <span class="dt">parameter_name =</span> <span class="st">&quot;log_lik&quot;</span>)
+<span class="co"># </span>
+<span class="co"># # Estimate the leave-one-out cross validation error</span>
+loo_incorrect &lt;-<span class="st"> </span><span class="kw">loo</span>(llik_incorrect)
+loo_correct &lt;-<span class="st"> </span><span class="kw">loo</span>(llik_correct)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Print the LOO statistics</span>
+<span class="kw">print</span>(<span class="st">&quot;Incorrect model&quot;</span>)
+<span class="kw">print</span>(loo_incorrect)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="st">&quot;Correct model&quot;</span>)
+<span class="kw">print</span>(loo_correct)</code></pre></div>
+<p>The quantity <code>elpd_loo</code> is the expected log pointwise predictive density (ELPD). The log pointwise predictive density is easiest to understand in terms of its computation. For each data point we compute the log of its average likelihood, where the average is computed over the posterior draws. Then we take the sum over all of the data points. We can multiply <code>elpd_loo</code> by <span class="math inline">\(-2\)</span> to calculate the <code>looic</code>, which you can think of like AIC or BIC, but coming from our Bayesian framework. The <span class="math inline">\(-2\)</span> is not important; it simply converts the value to the so-called deviance scale. The value of <code>p_loo</code> is the estimated effective number of parameters, which is a measure of model complexity. The effective number of parameters can be substantially less than the actual number of parameters when there is strong dependence between parameters (e.g. in many hierarchical models) or when parameters are given informative prior distributions. For further details on these quantities, please consult <a href="http://arxiv.org/abs/1507.04544">this paper</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Print the comparison between the two models</span>
+<span class="kw">print</span>(<span class="kw">compare</span>(loo_incorrect, loo_correct), <span class="dt">digits =</span> <span class="dv">2</span>)</code></pre></div>
+<p>When using the <code>compare</code> function to compare two models the <code>elpd_diff</code> gives us the difference in the ELPD estimates for the models. A positive <code>elpd_diff</code> indicates that the second model is estimated to have better out-of-sample predictive accuracy than the first, which is precisely what we expect in this case. When comparing more than two models the <code>compare</code> function will order the models by their ELPD estimates.</p>
+</div>
+</div>
+<div id="tools-of-the-trade-borrowing-from-software-engineering" class="section level2">
+<h2><span class="header-section-number">1.2</span> Tools of the trade: borrowing from software engineering</h2>
+<p>Building economic and statistical models increasingly requires sophisticated computation. This has the potential to improve our modeling, but carries with it risks; as the complexity of our models grows, so too does the prospect of making potentially influential mistakes. The well-known spreadsheet error in Rogoff and Reinhart’s (Cite) paper—a fairly simple error in very public paper—was discovered. Who knows how many other errors exist in more complex, less scruitinized work?</p>
+<p>Given the ease of making errors that substantively affect our models’ outputs, it makes sense to adopt a workflow that minimizes the risk of such error happening. The set of tools discussed in this section, all borrowed from software engineering, are designed for this purpose. We suggest incorporating the following into your workflow:</p>
+<ul>
+<li>Document your code formally. At the very least, this will involve commenting your code to the extend where a colleague could read it and not have too many questions. Ideally it will include formal documentation of every function that you write.</li>
+<li>When you write functions, obey what we might call “Tinbergen’s rule of writing software”: <em>one function, one objective</em>. Try not to write omnibus functions that conduct a large part of your analysis. Writing small, modular functions will allow you to use <strong>unit testing</strong>, a framework that lets you run a set of tests automatically, ensuring that changing one part of your code base does not break other parts.</li>
+<li>Use Git to manage your workflow. Git is a very powerful tool that serves several purposes. It can help you back up your work, which is handy. It also allows you to view your codebase at periods when you <em>committed</em> some code to the code base. It lets you experiment on <em>branches</em>, without risking the main (“production”) code base. Finally helps you work in teams; formalizing a <strong>code-review</strong> procedure that should help catch errors.</li>
+</ul>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="hierarchical.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

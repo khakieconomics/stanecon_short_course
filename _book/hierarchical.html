@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>A brief introduction to econometrics in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics.">
+  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+
+  <meta property="og:title" content="A brief introduction to econometrics in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  <meta name="github-repo" content="khakieconomist/BSEcon" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="A brief introduction to econometrics in Stan" />
+  
+  <meta name="twitter:description" content="This book provides an introduction to Bayesian modeling, and examples of the common techniques used in many fields of econometrics." />
+  
+
+<meta name="author" content="James Savage">
+
+
+<meta name="date" content="2017-04-30">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="intro.html">
+<link rel="next" href="funtimeseries.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-structure"><i class="fa fa-check"></i>The structure</a><ul>
+<li class="chapter" data-level="0.0.1" data-path="index.html"><a href="index.html#a-note-on-data"><i class="fa fa-check"></i><b>0.0.1</b> A note on data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#modern-statistical-workflow"><i class="fa fa-check"></i><b>1.1</b> Modern Statistical Workflow</a><ul>
+<li class="chapter" data-level="1.1.1" data-path="intro.html"><a href="intro.html#example-a-model-of-wages"><i class="fa fa-check"></i><b>1.1.1</b> Example: A model of wages</a></li>
+<li class="chapter" data-level="1.1.2" data-path="intro.html"><a href="intro.html#step-1-writing-out-the-probability-model"><i class="fa fa-check"></i><b>1.1.2</b> Step 1: Writing out the probability model</a></li>
+<li class="chapter" data-level="1.1.3" data-path="intro.html"><a href="intro.html#step-2-simulating-the-model-with-known-parameters"><i class="fa fa-check"></i><b>1.1.3</b> Step 2: Simulating the model with known parameters</a></li>
+<li class="chapter" data-level="1.1.4" data-path="intro.html"><a href="intro.html#writing-out-the-stan-model-to-recover-known-parameters"><i class="fa fa-check"></i><b>1.1.4</b> Writing out the Stan model to recover known parameters</a></li>
+<li class="chapter" data-level="1.1.5" data-path="intro.html"><a href="intro.html#model-inspection"><i class="fa fa-check"></i><b>1.1.5</b> Model inspection</a></li>
+<li class="chapter" data-level="1.1.6" data-path="intro.html"><a href="intro.html#model-comparison"><i class="fa fa-check"></i><b>1.1.6</b> Model comparison</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="intro.html"><a href="intro.html#tools-of-the-trade-borrowing-from-software-engineering"><i class="fa fa-check"></i><b>1.2</b> Tools of the trade: borrowing from software engineering</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="hierarchical.html"><a href="hierarchical.html"><i class="fa fa-check"></i><b>2</b> An introduction to hierarchical modeling</a><ul>
+<li class="chapter" data-level="2.0.1" data-path="hierarchical.html"><a href="hierarchical.html#what-is-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.1</b> What is hierarchical modeling</a></li>
+<li class="chapter" data-level="2.0.2" data-path="hierarchical.html"><a href="hierarchical.html#why-do-hierarchical-modeling"><i class="fa fa-check"></i><b>2.0.2</b> Why do hierarchical modeling?</a></li>
+<li class="chapter" data-level="2.0.3" data-path="hierarchical.html"><a href="hierarchical.html#exchangeability"><i class="fa fa-check"></i><b>2.0.3</b> Exchangeability</a></li>
+<li class="chapter" data-level="2.0.4" data-path="hierarchical.html"><a href="hierarchical.html#conditional-exchangeability-and-the-bafumi-gelman-correction"><i class="fa fa-check"></i><b>2.0.4</b> Conditional exchangeability and the Bafumi Gelman correction</a></li>
+<li class="chapter" data-level="2.0.5" data-path="hierarchical.html"><a href="hierarchical.html#exercise-1-hierarchical-priors"><i class="fa fa-check"></i><b>2.0.5</b> Exercise 1: Hierarchical priors</a></li>
+<li class="chapter" data-level="2.0.6" data-path="hierarchical.html"><a href="hierarchical.html#a-very-basic-underlying-model"><i class="fa fa-check"></i><b>2.0.6</b> A very basic underlying model</a></li>
+<li class="chapter" data-level="2.0.7" data-path="hierarchical.html"><a href="hierarchical.html#the-hierarchical-prior"><i class="fa fa-check"></i><b>2.0.7</b> The hierarchical prior</a></li>
+<li class="chapter" data-level="2.0.8" data-path="hierarchical.html"><a href="hierarchical.html#a-note-on-reparameterizing"><i class="fa fa-check"></i><b>2.0.8</b> A note on reparameterizing</a></li>
+<li class="chapter" data-level="2.0.9" data-path="hierarchical.html"><a href="hierarchical.html#exercise-2-panel-data"><i class="fa fa-check"></i><b>2.0.9</b> Exercise 2: Panel data</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="funtimeseries.html"><a href="funtimeseries.html"><i class="fa fa-check"></i><b>3</b> Some fun time series models</a><ul>
+<li class="chapter" data-level="3.1" data-path="funtimeseries.html"><a href="funtimeseries.html#this-session"><i class="fa fa-check"></i><b>3.1</b> This session</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="funtimeseries.html"><a href="funtimeseries.html#finite-mixtures"><i class="fa fa-check"></i><b>3.1.1</b> Finite mixtures</a></li>
+<li class="chapter" data-level="3.1.2" data-path="funtimeseries.html"><a href="funtimeseries.html#writing-out-the-model"><i class="fa fa-check"></i><b>3.1.2</b> Writing out the model</a></li>
+<li class="chapter" data-level="3.1.3" data-path="funtimeseries.html"><a href="funtimeseries.html#recapturing-known-unknowns"><i class="fa fa-check"></i><b>3.1.3</b> Recapturing ‘known unknowns’</a></li>
+<li class="chapter" data-level="3.1.4" data-path="funtimeseries.html"><a href="funtimeseries.html#taking-the-model-to-real-data"><i class="fa fa-check"></i><b>3.1.4</b> Taking the model to real data</a></li>
+<li class="chapter" data-level="3.1.5" data-path="funtimeseries.html"><a href="funtimeseries.html#building-up-the-model"><i class="fa fa-check"></i><b>3.1.5</b> Building up the model</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model-involving-polls"><i class="fa fa-check"></i><b>3.2</b> A state space model involving polls</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="funtimeseries.html"><a href="funtimeseries.html#multi-measurement-model-and-the-8-schools-example"><i class="fa fa-check"></i><b>3.2.1</b> Multi-measurement model and the 8 schools example</a></li>
+<li class="chapter" data-level="3.2.2" data-path="funtimeseries.html"><a href="funtimeseries.html#a-state-space-model"><i class="fa fa-check"></i><b>3.2.2</b> A state-space model</a></li>
+<li class="chapter" data-level="3.2.3" data-path="funtimeseries.html"><a href="funtimeseries.html#putting-it-together"><i class="fa fa-check"></i><b>3.2.3</b> Putting it together</a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">A brief introduction to econometrics in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="hierarchical" class="section level1">
+<h1><span class="header-section-number">Chapter 2</span> An introduction to hierarchical modeling</h1>
+<div id="what-is-hierarchical-modeling" class="section level3">
+<h3><span class="header-section-number">2.0.1</span> What is hierarchical modeling</h3>
+<p>Hierarchical modeling is the practice of building <em>rich</em> models, typcially in which each individual in your dataset has their own set of parameters. Of course, without good prior information, this might not be identified, or might be very weakly identified. Hierarchical modeling helps us deal with this problem by considering parameters at the low level as “sharing” information across individuals. This structure is known as “partial pooling”. This session covers partial pooling, starting from the canonical example “8 schools”, then shows how you can use partial pooling to provide prior information when combining previous studies with a new dataset. Finally I show how partial pooling can be used for analysis of panel data.</p>
+</div>
+<div id="why-do-hierarchical-modeling" class="section level3">
+<h3><span class="header-section-number">2.0.2</span> Why do hierarchical modeling?</h3>
+<p>There are a few excellent reasons to do hierarchical modeling:</p>
+<p><strong>To deal with unobserved information fairly fixed at the level of the group</strong></p>
+<p>The standard reason in economics to use panel data is to be able to “control for” confounding information that is fixed at the level of the individual over time. A similar motivation exists in hierarchical modeling.</p>
+<p>The big difference is that we will not consider the individual or time effects to be fixed. Indeed, we routinely “shrink” effects towards a group-level average. This encodes the heuristic “death, taxes, and mean reversion”. Cross-validating your results will almost always show that such an approach is superior to fixed effects for prediction.</p>
+<p><strong>Prediction with high-dimensional categorical variables</strong></p>
+<p>Often in applied economics we have very high-dimensional categorical variables. For instance, plant, manager, project etc. This can massively increase the size of the parameter space, and result in over-fitting/poor generalization. In contrast, implementing high-dimensioned predictors as (shrunken) random effects typically results in large improvements in predictive power.</p>
+<p><strong>Mr P: Multi-level regression and post-stratification</strong></p>
+<p>As economists we want to make inferences, typically of a causal nature. A common problem is that our data are not collected randomly; we have some survey bias. Frequentists tend to correct for this by weighting observations according to the inverse of their probability of being observed. Yet this approach moves away from a generative model, making model comparison and validation difficult.</p>
+<p>Mr P is the practice of fitting a model in which individuals, or groups of individuals (say, grouped by demographic cell) have their own sets of parameters (which are shrunk towards a hierarchical prior). When we want to make an inference for a new population we only need to know its demographics. The inference is the weighted average across effects in the sample, with weights coming from the new population.</p>
+<p>This method has the advantage that we can work with highly-biased samples, while keeping within a generative framework (making Modern Statistical Workflow completely doable). In a notorious example, Mr P was used by David Rothschild at Microsoft Research to predict the outcome of the 2012 election based on a survey run through the Xbox platform. The survey was almost entirely young men.</p>
+</div>
+<div id="exchangeability" class="section level3">
+<h3><span class="header-section-number">2.0.3</span> Exchangeability</h3>
+<p>Astute readers familiar with fixed effects models will have noted a problem with one of my arguments above. I said that we could use random intercepts to soak up unobserved information that affects both <span class="math inline">\(X\)</span> and <span class="math inline">\(y\)</span> by including group-varying intercepts <span class="math inline">\(\alpha_{j}\)</span>. But this implies that the unobserved information fixed in a group, <span class="math inline">\(\alpha_{j}\)</span>, is correlated with <span class="math inline">\(X\)</span>. This correlation violates a very important rule in varying-intercept, varying-slope models: exchangeability.</p>
+<blockquote>
+<p>Exchangeability says that there should be no information other than the outcome <span class="math inline">\(y\)</span> that should allow us to distinguish the group to which a group-level parameter belongs.</p>
+</blockquote>
+<p>In this example, we can clearly use values of X to predict <span class="math inline">\(j\)</span>, violating exchangeability. But all is not lost. The group-varying parameter needs not be uncorrelated with X, <em>only the random portion of it</em>.</p>
+</div>
+<div id="conditional-exchangeability-and-the-bafumi-gelman-correction" class="section level3">
+<h3><span class="header-section-number">2.0.4</span> Conditional exchangeability and the Bafumi Gelman correction</h3>
+<p>Imagine we have an exchangability issue for a very simple model with only group-varying intercept: the unobserved information <span class="math inline">\(\alpha_{j}\)</span> is correlated with <span class="math inline">\(X_{i,j}\)</span> across groups. Let’s break <span class="math inline">\(\alpha_{j}\)</span> down into its fixed and random portions.</p>
+<p><span class="math display">\[
+\alpha_{j} = \mu_{1} + \eta_{j}
+\]</span></p>
+<p>where <span class="math display">\[
+\eta_{j} \sim \mbox{normal}(0, \sigma_{\eta})
+\]</span></p>
+<p>So that now the regression model can be written as</p>
+<p><span class="math display">\[
+y_{i,t} = \mu_{1}  + X_{i,j}\beta + e_{i,j} \mbox{ where } e_{i,j} = \epsilon_{i,j}+ \eta_{j}
+\]</span></p>
+<p>For the correlation to hold, it must be the case that <span class="math inline">\(\eta_{j}\)</span> is correlated with <span class="math inline">\(X_{i,j}\)</span>. But our regression error is <span class="math inline">\(e_{i,j}\)</span>, which is clearly correlated with <span class="math inline">\(X\)</span> violating the Gauss-Markov theorem and so giving us biased estimates.</p>
+<p>In a <a href="http://www.stat.columbia.edu/~gelman/research/unpublished/Bafumi_Gelman_Midwest06.pdf">nice little paper</a> Bafumi and Gelman suggest an elegant fix to this: simply control for group level averages in the model of <span class="math inline">\(\alpha_{j}\)</span>. This is a Bayesian take on what econometricians might know as a Mundlak/Chamberlain approach. If <span class="math inline">\(\bar{X}_{j}\)</span> is the mean of <span class="math inline">\(X_{i,j}\)</span> in group <span class="math inline">\(j\)</span>, then we could use the model</p>
+<p><span class="math display">\[
+\alpha_{j} = \hat{\alpha} + \gamma \hat{X}_{j} + \nu_{j}
+\]</span></p>
+<p>which results in the correlaton between <span class="math inline">\(\nu_{j}\)</span> and <span class="math inline">\(X_{i,j}\)</span> across groups being 0. It’s straightforward to implement, and gets you to <em>conditional exchangeability</em>—a condition under which mixed models like this one are valid.</p>
+</div>
+<div id="exercise-1-hierarchical-priors" class="section level3">
+<h3><span class="header-section-number">2.0.5</span> Exercise 1: Hierarchical priors</h3>
+<p>In this exercise we’ll estimate an experimental treatment effect using linear regression, while incorporating prior information from previous studies. Rather than doing this in stages (estimating the treatment effect and then doing some meta-analysis), we’ll do everything in one pass. This has the advantage of helping us to get more precise estimates of all our model parameters.</p>
+</div>
+<div id="a-very-basic-underlying-model" class="section level3">
+<h3><span class="header-section-number">2.0.6</span> A very basic underlying model</h3>
+<p>Let’s say that we run the <span class="math inline">\(J\)</span>’th experiment estimating the treatment effect of some treatment <span class="math inline">\(x\)</span> on an outcome <span class="math inline">\(Y\)</span>. It’s an expensive and ethically challenging experiment to run, so unfortunately we’re only able to get a sample size of 20. For simplicity, we can assume that the treatment has the same treatment effect for all people, <span class="math inline">\(\theta\)</span> (this is easily dropped in more elaborate analyses). There have been <span class="math inline">\(J-1\)</span> similar experiments run in the past. In this example our outcome data <span class="math inline">\(Y\)</span> are conditionally normally distributed with (untreated) mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span>. There is nothing to stop us from having a far more complex model for the data. So the outcome model looks like this:</p>
+<p><span class="math display">\[
+y_{i, J} \sim \mbox{Normal}(\mu + \theta_{J} x_{i,J}, \sigma)
+\]</span></p>
+<p>The question is: how can we estimate the parameters of this model while taking account of the information from the <span class="math inline">\(J-1\)</span> previous studies? The answer is to use the so-called <em>hierarchical prior</em>.</p>
+</div>
+<div id="the-hierarchical-prior" class="section level3">
+<h3><span class="header-section-number">2.0.7</span> The hierarchical prior</h3>
+<p>Let’s say that each of the <span class="math inline">\(J-1\)</span> previous studies each has an estimated treatment effect <span class="math inline">\(\beta_{j}\)</span>, estimated with some standard error <span class="math inline">\(se_{j}\)</span>. Taken together, are these estimates of <span class="math inline">\(\beta_{j}\)</span> the ground truth for the true treatment effect in their respective studies? One way of answering this is to ask ourselves: if the researchers of each of those studies replicated their study in precisely the same way, but <em>after</em> checking the estimates estimated by the other researchers, would they expect to find the same estimate they found before, <span class="math inline">\(\beta_{j}\)</span>? Or would they perhaps expect some other treatment effect estimate, <span class="math inline">\(\theta_{j}\)</span>, that balances the information from their own study with the other studies?</p>
+<p>The answer to this question gives rise to the hierarchical prior. In this prior, we say that the estimated treatment effect <span class="math inline">\(\beta\)</span> is a noisy measure of the underlying treatment effect <span class="math inline">\(\theta_{j}\)</span> for each study <span class="math inline">\(j\)</span>. These underlying effects are in turn noisy estimates of the true average treatment effect <span class="math inline">\(\hat{\theta}\)</span>—noisy because of uncontrolled-for varation across experiments. That is, if we make assumptions of normality:</p>
+<p><span class="math display">\[
+\beta_{j} \sim \mbox{Normal}(\theta_{j}, se_{j})
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\theta_{j} \sim \mbox{Normal}\left(\hat{\theta}, \tau\right)
+\]</span></p>
+<p>Where <span class="math inline">\(\tau\)</span> is the standard devation of the distribution of plausible experimental estimates.</p>
+<p>The analysis therefore has the following steps:</p>
+<ul>
+<li>Build a model of the treatment effects, considering our own study as another data point</li>
+<li>Jointly estimate the hyperdistribution of treatment effects.</li>
+</ul>
+<p>As an example, we’ll take the original 8-schools data, with some fake data for the experiment we want to estimate. The 8-schools example comes from an education intervention modeled by Rubin, in which a similar experiment was conducted in 8 schools, with only treatment effects and their standard errors reported. The task is to generate an estimate of the possible treatment effect that we might expect if we were to roll out the program across all schools.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rstan); <span class="kw">library</span>(dplyr); <span class="kw">library</span>(ggplot2); <span class="kw">library</span>(reshape2)
+
+<span class="co"># The original 8 schools data</span>
+schools_dat &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">beta =</span> <span class="kw">c</span>(<span class="dv">28</span>,  <span class="dv">8</span>, -<span class="dv">3</span>,  <span class="dv">7</span>, -<span class="dv">1</span>,  <span class="dv">1</span>, <span class="dv">18</span>, <span class="dv">12</span>),
+                          <span class="dt">se =</span> <span class="kw">c</span>(<span class="dv">15</span>, <span class="dv">10</span>, <span class="dv">16</span>, <span class="dv">11</span>,  <span class="dv">9</span>, <span class="dv">11</span>, <span class="dv">10</span>, <span class="dv">18</span>))
+
+<span class="co"># The known parameters of our data generating process for fake data</span>
+mu &lt;-<span class="st"> </span><span class="dv">10</span>
+sigma &lt;-<span class="st"> </span><span class="dv">5</span>
+N &lt;-<span class="st"> </span><span class="dv">20</span>
+<span class="co"># Our fake treatment effect estimate drawn from the posterior of the 8 schools example</span>
+theta_J &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>, <span class="dv">8</span>, <span class="fl">6.45</span>) 
+
+<span class="co"># Create some fake data</span>
+treatment &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dv">0</span>:<span class="dv">1</span>, N, <span class="dt">replace =</span> T)
+y &lt;-<span class="st"> </span><span class="kw">rnorm</span>(N, mu +<span class="st"> </span>theta_J*treatment, sigma)</code></pre></div>
+<p>The Stan program we use to estimate the model is below. Note that these models can be difficult to fit, and so we employ a “reparameterization” below for the <code>theta</code>s. This is achieved by noticing that if</p>
+<p><span class="math display">\[
+\theta_{j} \sim \mbox{Normal}\left(\hat{\theta}, \tau\right)
+\]</span> then <span class="math display">\[
+\theta_{j} = \hat{\theta} + \tau z_{j}
+\]</span></p>
+<p>where <span class="math inline">\(z_{j}\sim\mbox{Normal}(0,1)\)</span>. A standard normal has an easier geometry for Stan to work with, so this parameterization of the model is typically preferred. Here is the Stan model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">/<span class="er">/</span><span class="st"> </span>We save this as 8_schools_w_regression.stan
+data {
+  int&lt;lower=<span class="dv">0</span>&gt;<span class="st"> </span>J; /<span class="er">/</span><span class="st"> </span>number of schools 
+  int N; /<span class="er">/</span><span class="st"> </span>number of observations in the regression problem
+  real beta[J]; /<span class="er">/</span><span class="st"> </span>estimated treatment effects from previous studies
+  real&lt;lower=<span class="dv">0</span>&gt;<span class="st"> </span>se[J]; /<span class="er">/</span><span class="st"> </span>s.e. of those effect estimates 
+  vector[N] y; /<span class="er">/</span><span class="st"> </span>the outcomes for students in our fake study data
+  vector[N] treatment; /<span class="er">/</span><span class="st"> </span>the treatment indicator in our fake study data
+}
+parameters {
+  real mu; 
+  real&lt;lower=<span class="dv">0</span>&gt;<span class="st"> </span>tau;
+  real eta[J<span class="dv">+1</span>];
+  real&lt;lower =<span class="st"> </span><span class="dv">0</span>&gt;<span class="st"> </span>sigma;
+  real theta_hat;
+}
+transformed parameters {
+  real theta[J<span class="dv">+1</span>];
+  for (j in <span class="dv">1</span>:(J<span class="dv">+1</span>)){
+    theta[j] =<span class="st"> </span>theta_hat +<span class="st"> </span>tau *<span class="st"> </span>eta[j];
+  }
+}
+model {
+  /<span class="er">/</span><span class="st"> </span>priors
+  tau ~<span class="st"> </span><span class="kw">cauchy</span>(<span class="dv">5</span>, <span class="dv">2</span>);
+  mu ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">10</span>, <span class="dv">2</span>);
+  eta ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">0</span>, <span class="dv">1</span>);
+  sigma ~<span class="st"> </span><span class="kw">cauchy</span>(<span class="dv">3</span>, <span class="dv">3</span>);
+  theta_hat ~<span class="st"> </span><span class="kw">normal</span>(<span class="dv">8</span>, <span class="dv">5</span>);
+  
+  /<span class="er">/</span><span class="st"> </span>parameter model for previous studies
+  for(j in <span class="dv">1</span>:J) {
+    beta[j] ~<span class="st"> </span><span class="kw">normal</span>(theta[j], se[j]);
+  }
+  
+  /<span class="er">/</span><span class="st"> </span>our regression
+  y ~<span class="st"> </span><span class="kw">normal</span>(mu +<span class="st"> </span>theta[J<span class="dv">+1</span>]*treatment, sigma);
+  
+}</code></pre></div>
+<p>Now we estimate the model from R. Because of the geometry issues mentioned above, we use <code>control = list(adapt_delta = 0.99)</code> to prompt Stan to take smaller step sizes, improving sampling performance at a cost of slower estimation time (this isn’t a problem here; it estimates in a couple of seconds).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eight_schools_plus_regression &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="st">&quot;8_schools_w_regression.stan&quot;</span>,
+                       <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">beta =</span> schools_dat$beta,
+                                   <span class="dt">se =</span> schools_dat$se,
+                                   <span class="dt">J =</span> <span class="dv">8</span>,
+                                   <span class="dt">y =</span> y,
+                                   <span class="dt">N =</span> N,
+                                   <span class="dt">treatment =</span> treatment),
+                       <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">adapt_delta =</span> <span class="fl">0.99</span>))</code></pre></div>
+<p>Let’s comapare the estimates we get for our regression model to those we might get from the Bayesian model. A simple linear regression model gives us the following confidence intervals for the parameter estimates:</p>
+<p>Our Bayesian model gives us more precise estimates for the treatment effect, with the 95% credibility region considerably smaller. This is because we have “borrowed”&quot; information from the previous studies when estimating the treatment effect in the latest study. The estimates are also closer to the group-level mean.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(eight_schools_plus_regression, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;theta[9]&quot;</span>, <span class="st">&quot;theta_hat&quot;</span>), <span class="dt">probs =</span> <span class="kw">c</span>(<span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span>))</code></pre></div>
+</div>
+<div id="a-note-on-reparameterizing" class="section level3">
+<h3><span class="header-section-number">2.0.8</span> A note on reparameterizing</h3>
+<p>Hierarchical models are famous for inducing regions of high curvature in the typical set (see Betancourt 2017). Often, if we implement these directly we get many divergent transitions, in which we cannot trust the results. We often use a reparameterization to reshape the posterior into one that will not induce such curvature, as in the example above. These reparameterizations are typically of the following form:</p>
+<p>Original random effects parameterization: <span class="math display">\[
+\theta_{k} \sim \mbox{Normal}(\theta, \sigma)
+\]</span> New parameterization:</p>
+<p><span class="math display">\[
+\theta_{k} = \theta + \sigma z_{k} \mbox{  with } z_{k} \sim \mbox{Normal}(0, 1)
+\]</span></p>
+<p>A similar idea works if you have multivariate parameters, for instance in a varying-intercepts varying-slopes model. This time, let <span class="math inline">\(\theta_{k}\)</span> be a vector of parameters:</p>
+<p>Original parameterization: <span class="math display">\[
+\theta_{k} \sim \mbox{Multi normal}(\theta, \Sigma)
+\]</span> New parameterization: <span class="math display">\[
+\theta_{k} = \theta + \mbox{Chol}(\Sigma) z_{k} \mbox{  with } \mbox{vec}(z_{k}) \sim \mbox{Normal}(0, 1)
+\]</span> Here, <span class="math inline">\(\mbox{Chol}(\Sigma)\)</span> is the Cholesky factor of <span class="math inline">\(\Sigma\)</span>. Cholesky factors are a sort of square root operator for square invertable matrices.</p>
+</div>
+<div id="exercise-2-panel-data" class="section level3">
+<h3><span class="header-section-number">2.0.9</span> Exercise 2: Panel data</h3>
+<p>In some recent research with Jeff Alstott (Media Lab, National Academy), we have been investigating whether the growth rates of technologies and the variation in their growth rates are related. One very simple model of the progress of technology <span class="math inline">\(y_{i,t}\)</span> with continuous compounding growth rate <span class="math inline">\(g\)</span> would be:</p>
+<p><span class="math display">\[
+\log(y_{i, t}) = a_{i} + g_{i}t + \epsilon_{i,t} \mbox{ with } \epsilon_{i,t} \sim \mbox{Normal}(0, \sigma_{i})
+\]</span> The research question is whether there is a strong correlation between <span class="math inline">\(\sigma_{i}\)</span> and <span class="math inline">\(g_{i}\)</span>. Typically we will have, say, 10 observations of each technology (and for some, fewer), so we want to make sure that our inference appropriately accounts for the small-data nature. Because the data are small, estimates of <span class="math inline">\(a, g_{i}\)</span> and <span class="math inline">\(\sigma\)</span> will be noisy; if we can learn a good hyperprior for the model, we’ll be able to generate better predictions and inference.</p>
+<p>A data generating process for such a correlated structure might be:</p>
+<p><span class="math display">\[
+\log(y_{i, t}) = a_{i} + g_{i}t + \epsilon_{i,t} \mbox{ with } \epsilon_{i,t} \sim \mbox{Normal}(0, \sigma_{i})
+\]</span> with</p>
+<p><span class="math display">\[
+(a_{i}, g_{i}, \log(\sigma_{i}))&#39; \sim \mbox{Multi normal} \left(\mu, \mbox{diag}(\tau)\Omega\mbox{diag}(\tau)\right)
+\]</span> where <span class="math inline">\(\mu\)</span> is a vector of locations, <span class="math inline">\(\tau\)</span> is a vector of scales, and <span class="math inline">\(\Omega\)</span> is a correlation matrix.</p>
+<p>Let’s simulate some data from this model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr); <span class="kw">library</span>(ggplot2)
+<span class="kw">set.seed</span>(<span class="dv">42</span>)
+T &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># of observations per technology</span>
+J &lt;-<span class="st"> </span><span class="dv">20</span> <span class="co"># number of technologies</span>
+tau &lt;-<span class="st"> </span><span class="kw">abs</span>(<span class="kw">rnorm</span>(<span class="dv">3</span>))
+Omega &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, -.<span class="dv">5</span>, <span class="dv">0</span>, -.<span class="dv">5</span>, <span class="dv">1</span>, .<span class="dv">5</span>, <span class="dv">0</span>, .<span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">3</span>, <span class="dv">3</span>)
+Sigma &lt;-<span class="st"> </span><span class="kw">diag</span>(tau)%*%<span class="st"> </span>Omega %*%<span class="st"> </span><span class="kw">diag</span>(tau)
+mu &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, .<span class="dv">3</span>)
+some_parameters &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(MASS::<span class="kw">mvrnorm</span>(J, mu, Sigma)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tech =</span> <span class="dv">1</span>:J,
+         <span class="dt">sigma =</span> <span class="kw">exp</span>(V3)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">a =</span> V1, <span class="dt">b =</span> V2) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(-V3)
+
+<span class="co"># A data grid</span>
+data_grid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">tech =</span> <span class="dv">1</span>:J, <span class="dt">time =</span> <span class="dv">1</span>:T) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">left_join</span>(some_parameters) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">technology_log_level =</span> <span class="kw">rnorm</span>(<span class="kw">n</span>(), a +<span class="st"> </span>b*time, sigma)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(tech, time)
+
+
+<span class="co"># Have a look at the data</span>
+data_grid %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> technology_log_level, <span class="dt">group =</span> tech)) +
+<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
+<p>Now, let’s code up the model, precisely as we propose the data generating process to be</p>
+<pre><code>// saved as models/simple_panel_reparam.stan
+data {
+  int N; // number of observations in total
+  int J; // number of technologies
+  vector[N] time; // time 
+  int tech[N]; // tech index
+  vector[N] y; // the log levels of the technology
+}
+parameters {
+  matrix[J, 3] z;
+  vector[3] theta_mu;
+  vector&lt;lower = 0&gt;[3] theta_tau;
+  corr_matrix[3] Omega;
+}
+transformed parameters {
+  matrix[J, 3] theta;
+  for(j in 1:J) {
+    theta[j] = (theta_mu + cholesky_decompose(quad_form_diag(Omega, theta_tau)) * z[j]&#39;)&#39;;
+  }
+}
+model {
+  theta_mu ~ normal(0, 1);
+  theta_tau ~ cauchy(0, 1);
+  Omega ~ lkj_corr(2);
+  
+  to_vector(z) ~ normal(0, 1);
+  
+  for(i in 1:N) {
+    y[i] ~ normal(theta[tech[i], 1] + theta[tech[i], 2]* time[i], exp(theta[tech[i], 3]));
+  }
+}
+</code></pre>
+<p>Now let’s run it:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tech_mod &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="st">&quot;models/simple_panel_reparam.stan&quot;</span>)
+test_tech &lt;-<span class="st"> </span><span class="kw">sampling</span>(tech_mod, <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">nrow</span>(data_grid), 
+                                            <span class="dt">J =</span> J, <span class="dt">time =</span> data_grid$time,
+                                            <span class="dt">tech =</span> data_grid$tech, 
+                                            <span class="dt">y =</span> data_grid$technology_log_level), <span class="dt">iter =</span> <span class="dv">500</span>)
+
+<span class="co"># And let&#39;s look at our estimates</span>
+<span class="kw">get_posterior_mean</span>(test_tech, <span class="st">&quot;theta&quot;</span>)[,<span class="dv">5</span>] %&gt;%<span class="st"> </span><span class="kw">matrix</span>(J, <span class="dv">3</span>, <span class="dt">byrow =</span> T)
+
+<span class="kw">print</span>(test_tech, <span class="st">&quot;theta_mu&quot;</span>)
+
+<span class="kw">print</span>(test_tech, <span class="st">&quot;Omega&quot;</span>)</code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="intro.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="funtimeseries.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
