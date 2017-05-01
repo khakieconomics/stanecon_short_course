@@ -98,7 +98,7 @@ We will cover fixed and random effects, and the Gelman-Bafumi correction (which 
 more widely applicable). We also discuss how to incorporate instruments in these models. 
 
 The last session introduces some fun time-series models. Chapter seven illustrates how to implement more 
-advanced multivariate time-series models. These include Structural Vector Autoregressions (SVAR), factor models, and state-space methods, including time-varying parameter regressions, and low-to-high frequency missing values interpolation. 
+advanced multivariate time-series models. 
 
 ### A note on data
 

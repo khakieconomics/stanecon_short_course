@@ -10,3 +10,4 @@ StanHeaders
 rstan
 dplyr
 reshape2
+bookdown

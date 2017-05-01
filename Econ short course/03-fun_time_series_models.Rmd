@@ -336,7 +336,7 @@ which simply says that consumer confidence is a random walk with normal innovati
 with a standard deviation $\sigma$, and 
 
 $$
-\mbox{survey_measure}_{t} \sim \mathcal{N}(conf_{t}, \tau)
+\mbox{survey measure}_{t} \sim \mbox{normal}(\mbox{conf}_{t}, \tau)
 $$
 
 which says that our survey measures are normally distributed around the true latent 

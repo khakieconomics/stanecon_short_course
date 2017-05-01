@@ -427,6 +427,8 @@ Now that we have specified two models, let's estimate them with the $y$ and $X$ 
 ```{r, results = "hide"}
 # In R
 
+compiled_model <- stan_model("")
+
 incorrect_fit <- stan(file = "models/independent_iv.stan",
                       data = list(Y = Y,
                                   X = X,
@@ -435,6 +437,7 @@ incorrect_fit <- stan(file = "models/independent_iv.stan",
                                   N = N,
                                   Z = Z), 
                       iter = 600)
+
 correct_fit <- stan(model_code = "models/joint_iv.stan",
                     data = list(Y = Y,
                                 X = X,

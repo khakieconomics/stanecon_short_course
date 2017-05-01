@@ -10,7 +10,7 @@ data {
 parameters {
   vector[P] beta; // the regression coefficients
   vector[P] gamma;
-  real tau;
+  real<lower = 0> tau;
   real delta;
   real alpha_1;
   real alpha_2;

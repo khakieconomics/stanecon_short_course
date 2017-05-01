@@ -26,7 +26,7 @@
 <meta name="author" content="James Savage">
 
 
-<meta name="date" content="2017-01-20">
+<meta name="date" content="2017-04-30">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -188,24 +188,34 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>As a good rule of thumb, the more questions you want a model to be able to answer, the more complex the model will have to be. The first question above might be answered with a simple linear regression model, the second, a more elaborate model that allows the relationship between experience and wages to vary across demographic groups; the final question might involve modeling the variance of the wage distribution, not just its mean.</p>
 <p>The example given below introduces a simple linear model of wages given demographic characteristics, with the intent of introducing instrumental variables—the first trick up our sleeve for the day. We’ll introduce two competing instrumental variables models: the first assuming independence between the first and second stage regressions and the second modeling them jointly.</p>
 <p>Let’s walk through each step of the workflow, gradually introducing Stan along the way. While we’re not going to estimate the model on real data, we want to make sure that the model we build is sane. As such we’ll look at the characteristics of wages for some real data. This data comes from some wage and demographics data from the 1988 Current Population Survey, which comes in R’s <code>AER</code> package. This dataset contains the weekly wage for around 28,000 working men in 1988; prices are in 1992 dollars. You can load the dataset into your R workspace like so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## library(AER)
-## data(&quot;CPS1988&quot;)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(AER)</code></pre></div>
+<pre><code>## Loading required package: car</code></pre>
+<pre><code>## Loading required package: lmtest</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre><code>## Loading required package: sandwich</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;CPS1988&quot;</span>)</code></pre></div>
 </div>
 <div id="step-1-writing-out-the-probability-model" class="section level3">
 <h3><span class="header-section-number">1.1.2</span> Step 1: Writing out the probability model</h3>
 <p>The first step of of our workflow is to propose an underlying generative model. It’s helpful to think of a generative model as being a structured random number generator, which when simulated, generates outcomes with a distribution that looks like the distribution of the outcome variable. Once we have decided on the generative model, we then get into the specifics of endogeneity issues etc. In deciding the choice of distribution to use, you should plot a histogram or density of the outcome. For example, we could generate a histogram of wages like so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## library(ggplot2)
-## ggplot(CPS1988, aes(x = log(wage))) +
-##   geom_histogram() + 
-##   ggthemes::theme_economist(base_size = 12) +
-##   ggtitle(&quot;Histogram of log of wages&quot;)
-## </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">ggplot</span>(CPS1988, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(wage))) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +<span class="st"> </span>
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>(<span class="dt">base_size =</span> <span class="dv">12</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Histogram of log of wages&quot;</span>)</code></pre></div>
+<p><img src="BSEcon_files/figure-html/unnamed-chunk-3-1.png" width="288" /></p>
 <p>As we can see, the distribution of wages is quite skewed, and so we might need to choose a distribution capable of generating highly skewed outcomes. Another approach is to transform the data. In this case, because all wages are positive, we could take their natural log. The distribution of log wages appears to be far more normal than the initial distribution, and it possible that the non-normality is explainable using demographic characteristics.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## ggplot(CPS1988, aes(x = log(wage))) +
-##   geom_histogram() + 
-##   ggthemes::theme_economist(base_size = 12) +
-##   ggtitle(&quot;Histogram of log of wages&quot;)
-## </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(CPS1988, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log</span>(wage))) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +<span class="st"> </span>
+<span class="st">  </span>ggthemes::<span class="kw">theme_economist</span>(<span class="dt">base_size =</span> <span class="dv">12</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Histogram of log of wages&quot;</span>)</code></pre></div>
+<p><img src="BSEcon_files/figure-html/unnamed-chunk-4-1.png" width="288" /></p>
 <p>If we decide to choose a normal density as the data-generating process, and assume that the conditional distribution of one person’s wage does not depend on the conditional distribution of another person’s, we can write it out like so:</p>
 <p><span class="math display">\[
 \log(\mbox{wage})_{i} \sim \mbox{Normal}(\mu_{i}, \sigma_{i})
@@ -436,6 +446,8 @@ generated quantities {
 <p>Now that we have specified two models, let’s estimate them with the <span class="math inline">\(y\)</span> and <span class="math inline">\(X\)</span> we generated above.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R</span>
 
+compiled_model &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="st">&quot;&quot;</span>)
+
 incorrect_fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">file =</span> <span class="st">&quot;models/independent_iv.stan&quot;</span>,
                       <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">Y =</span> Y,
                                   <span class="dt">X =</span> X,
@@ -444,6 +456,7 @@ incorrect_fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span c
                                   <span class="dt">N =</span> N,
                                   <span class="dt">Z =</span> Z), 
                       <span class="dt">iter =</span> <span class="dv">600</span>)
+
 correct_fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">model_code =</span> <span class="st">&quot;models/joint_iv.stan&quot;</span>,
                     <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">Y =</span> Y,
                                 <span class="dt">X =</span> X,

@@ -1,4 +1,5 @@
-book_filename: "BSEcon"
+book_filename: "Shortcourse"
 language:
   ui:
     chapter_name: "Chapter "
+output_dir: "docs"
