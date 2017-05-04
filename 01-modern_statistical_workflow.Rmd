@@ -80,10 +80,10 @@ outcome. For example, we could generate a histogram of wages like so:
 ```{r, message = F, warning = F, fig.height=2, fig.width=3, eval = T}
 library(ggplot2)
 library(ggthemes)
-ggplot(CPS1988, aes(x = log(wage))) +
+ggplot(CPS1988, aes(x = wage)) +
   geom_histogram() + 
   ggthemes::theme_economist(base_size = 12) +
-  ggtitle("Histogram of log of wages")
+  ggtitle("Histogram of wages")
 
 ```
 
