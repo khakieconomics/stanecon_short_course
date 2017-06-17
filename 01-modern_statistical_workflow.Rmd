@@ -79,10 +79,11 @@ outcome. For example, we could generate a histogram of wages like so:
 
 ```{r, message = F, warning = F, fig.height=2, fig.width=3, eval = T}
 library(ggplot2)
-ggplot(CPS1988, aes(x = log(wage))) +
+library(ggthemes)
+ggplot(CPS1988, aes(x = wage)) +
   geom_histogram() + 
   ggthemes::theme_economist(base_size = 12) +
-  ggtitle("Histogram of log of wages")
+  ggtitle("Histogram of wages")
 
 ```
 
@@ -299,7 +300,6 @@ for the mutual information in first and second stage regressions.
 
 ```
 // saved as models/independent_iv.stan
-// saved as models/independent_iv.stan
 data {
   int N; // number of observations
   int P; // number of covariates
@@ -360,7 +360,6 @@ generated quantities {
 Now we define the correctly specified model. It is the same as above, but with a couple of changes:
 
 ```
-// saved as models/joint_iv.stan
 // saved as models/joint_iv.stan
 data {
   int N; // number of observations
